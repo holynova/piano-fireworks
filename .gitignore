@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.wrangler/
+.impeccable/
+.DS_Store
+__pycache__/
+.env*
+piano-fireworks.mp4
+poster.jpg
