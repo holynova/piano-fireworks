@@ -81,7 +81,7 @@
     const text=document.createElement('span'),label=document.createElement('strong'),author=document.createElement('small');
     label.textContent=track.title;author.textContent=(track.instrument || '钢琴')+' · '+track.composer;text.append(label,author);
     const len=document.createElement('span');len.className='len';len.textContent=time(track.duration);
-    button.append(art,text,len);button.onclick=()=>{if(index!==i)select(i);play()};
+    button.append(art,text,len);button.onclick=()=>{if(index!==i)select(i);drawer.close();play()};
     $('tracks').append(button);
     if(track.source){
       const a=document.createElement('a');a.href=track.source;a.textContent=track.title+' ↗';a.target='_blank';a.rel='noopener noreferrer';$('sourceLinks').append(a);
@@ -152,7 +152,11 @@
   }
   function request(){if(!frame&&!document.hidden)frame=requestAnimationFrame(draw)}
   $('play').onclick=toggle;
-  $('scene').onclick=()=>{if(isFull())exitShow();else toggle()};
+  $('scene').onclick=()=>{
+    if(isFull())exitShow();
+    else if(!wakeOnlyTap)toggle();
+    wakeOnlyTap=false;
+  };
   $('previous').onclick=()=>{select(index-1);play()};$('next').onclick=()=>{select(index+1);play()};
   $('mute').onclick=()=>{muted=!muted;remember('muted',String(muted));syncSound();refresh()};
   function updateSection(time){
@@ -284,6 +288,7 @@
       $('count').hidden=!tracksVisible;
       $('panelTitle').textContent=opener.textContent.trim();
       if(!drawer.open)drawer.show();
+      showControls();
       if(sharing)updateShare();
       keyState=null;request();
       drawer.scrollTop=0;
@@ -292,11 +297,37 @@
   }
   $('closePanel').onclick=()=>drawer.close();
   drawer.addEventListener('close',()=>{if(!drawer.open && opener){opener.setAttribute('aria-expanded','false');opener.focus({preventScroll:true});opener=null}});
-  if(matchMedia('(min-width:701px)').matches){
+  if(window.TuningPreview?.trial && matchMedia('(min-width:701px)').matches){
     opener=$('railTuning');
     opener.setAttribute('aria-expanded','true');
     drawer.open=true;
   }
+  // An idle stage keeps its dimensions. Only its controls fade.
+  let idleTimer, pointerHeld=false, keyboardNavigation=false, wakeOnlyTap=false;
+  function showControls(){
+    clearTimeout(idleTimer);
+    document.body.classList.remove('controlsIdle');
+    if(audio.paused || audio.ended || pointerHeld || drawer.open || $('credits').open || document.hidden)return;
+    if(keyboardNavigation && document.activeElement?.closest('.deck,.hallRail,.mast'))return;
+    idleTimer=setTimeout(()=>document.body.classList.add('controlsIdle'),3000);
+  }
+  document.addEventListener('pointermove',e=>{
+    if(e.pointerType==='touch')return;
+    keyboardNavigation=false;
+    showControls();
+  },{passive:true});
+  document.addEventListener('pointerdown',e=>{
+    wakeOnlyTap=e.pointerType!=='mouse' && e.target===$('scene') && document.body.classList.contains('controlsIdle');
+    pointerHeld=true;keyboardNavigation=false;showControls();
+  },{passive:true});
+  function releasePointer(){pointerHeld=false;showControls()}
+  for(const type of ['pointerup','pointercancel','blur'])window.addEventListener(type,releasePointer);
+  document.addEventListener('keydown',()=>{keyboardNavigation=true;wakeOnlyTap=false;showControls()},true);
+  document.addEventListener('focusin',showControls);
+  drawer.addEventListener('close',showControls);
+  $('credits').addEventListener('close',showControls);
+  for(const type of ['play','pause','ended','error'])audio.addEventListener(type,showControls);
+  document.addEventListener('visibilitychange',showControls);
   function isFull(){return Boolean(document.fullscreenElement)||$('concert').classList.contains('theater')}
   async function exitShow(){
     if(document.fullscreenElement)await document.exitFullscreen();

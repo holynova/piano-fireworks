@@ -43,23 +43,44 @@
 @media(pointer:coarse){.previewPanels .optionChip,.previewPanels .blockRail,.previewPanels .blockRail input,.compareTable th button{min-height:44px}.blockRail::before{inset:13px 0}}
 
 /* The hall leaves the stage and transport in view; tools open beside the rail. */
-.hall{--rail:84px;--mast:66px}
-.hall .mast{width:100%;height:var(--mast);min-height:0;padding:0 clamp(16px,3vw,44px)}
+.hall{--rail:56px;--mast:42px}
+.hall .mast{position:absolute;inset:0 0 auto;z-index:2;width:100%;height:var(--mast);min-height:0;padding:0 16px;border:0;pointer-events:none}
+.hall .mast a{pointer-events:auto}
+.hall .brand{gap:6px}.hall .brand canvas{width:22px;height:22px}.hall .brand h1{font-size:16px}
 .releaseLinks{display:flex;gap:14px;align-items:center;color:var(--muted);font-size:12px}
 .releaseLinks a{color:var(--cream);text-underline-offset:4px}
-.hall main{width:100%;height:calc(100dvh - var(--mast));min-height:310px;padding:0;gap:0;grid-template-columns:minmax(0,1fr) var(--rail);grid-template-rows:minmax(0,1fr);align-items:stretch}
-.hall main:has(#mobilePanel[open]){grid-template-columns:minmax(0,1fr) clamp(264px,30vw,380px) var(--rail)}
+.hall main{width:100%;height:100dvh;min-height:310px;position:relative;padding:0;gap:0;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);align-items:stretch}
+.hall main:has(#mobilePanel[open]){padding-top:var(--mast);grid-template-columns:minmax(0,1fr) clamp(264px,30vw,380px) var(--rail)}
 .hall main > .concert{grid-area:1 / 1}
 .hall main > .hallRail{grid-area:1 / -2 / -1 / -1}
 .hall .concert{position:relative;top:0;display:flex;flex-direction:column;border:0;border-radius:0}
-.hall .viewer{flex:1;height:auto}.hall .deck{padding:13px clamp(14px,3vw,42px) 15px}
+.hall .viewer{flex:1;height:auto}
+.hall .deck{position:absolute;inset-inline:0;margin-inline:auto;bottom:max(10px,env(safe-area-inset-bottom));width:min(430px,calc(100% - 2 * var(--rail) - 12px));padding:8px 12px 4px;gap:1px 8px;border:1px solid #d1d8df18;border-radius:10px;background:#0d14205c;text-shadow:0 1px 4px #03070e;backdrop-filter:blur(5px)}
+.hall main:has(#mobilePanel[open]) .deck{width:min(430px,calc(100% - 28px))}
+.hall .details{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 7px}
+.hall .details h2{order:-2;font-size:18px}.hall .details #artist{order:-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;margin:0;font-size:11px}
+.hall .details #tempo{font-size:10px;letter-spacing:0}
+.hall .controls{gap:0}
+.hall .controls button{width:34px;height:34px}.hall .controls svg{width:16px;height:16px}
+.hall .play{background:#eac38e29;color:#f9dfb2}.hall .play:hover{background:#eac38e47;color:#fff0d6}
+.hall .progress{gap:8px;font-size:10px}.hall .progress input{height:20px}
+.hall .viewbar{top:var(--mast);left:16px}.hall .live{min-height:21px;padding:0 7px;gap:5px;border:0;backdrop-filter:none;background:#10162150;font-size:10px}
+.hall .live b{width:4px;height:4px}
+.hall main:has(#mobilePanel[open]) .viewbar{top:8px}
 .hall .concert.theater{position:fixed}
 .hall .concert:is(:fullscreen,.theater){inset:0;width:100%;height:100%}
-.hallRail.panelTools{position:relative;flex-flow:column nowrap;align-items:stretch;gap:4px;padding:10px 5px;margin:0;background:var(--panel);border-left:1px solid var(--edge);overflow-y:auto}
-.hallRail.panelTools button{flex:0 0 auto;min-height:56px;display:flex;justify-content:center;flex-direction:column;gap:6px;padding:5px 0;border:0;border-radius:6px;font-size:12px}
-.hallRail.panelTools svg{width:21px;height:21px}.hallRail #exportVideo{margin-left:0}
+.hallRail.panelTools{position:absolute;inset:var(--mast) 0 0 auto;z-index:1;width:var(--rail);flex-flow:column nowrap;align-items:stretch;gap:2px;padding:4px 3px;margin:0;background:transparent;border:0;overflow-y:auto}
+.hallRail.panelTools button{flex:0 0 auto;min-height:44px;display:flex;justify-content:center;flex-direction:column;gap:3px;padding:4px 0;border:0;border-radius:6px;font-size:10px}
+.hallRail.panelTools svg{width:16px;height:16px}.hallRail #exportVideo{margin-left:0}
 .hallRail button:is(:hover,[aria-expanded=true]){background:#242b37;color:var(--gold)}
 .railSpace{flex:1}
+.hall main:has(#mobilePanel[open]) .hallRail{position:relative;inset:auto}
+.hall :is(.mast,.deck,.viewbar,.hallRail){opacity:.8;transition:opacity .22s ease}
+.hall :is(.deck,.hallRail,.mast):is(:hover,:focus-within){opacity:1}
+.hall.controlsIdle :is(.mast,.deck,.viewbar,.hallRail){opacity:0;pointer-events:none}
+.hall.controlsIdle .mast a{pointer-events:none}
+.hall.controlsIdle #scene{cursor:none}
+@media(prefers-reduced-motion:reduce){.hall :is(.mast,.deck,.viewbar,.hallRail,.play){transition:none}}
 .hall #mobilePanel{position:static;grid-area:1 / 2;inset:auto;margin:0;width:100%;height:100%;min-height:0;min-width:0;overscroll-behavior:contain;background:#151b25;border-left:1px solid #454d59;padding:12px 18px}
 .hall #closePanel{display:block;margin-left:auto;font:13px system-ui;color:var(--muted)}
 .panelHeading{position:sticky;top:-12px;z-index:2;display:flex;align-items:center;gap:8px;background:#151b25;padding:8px 0;border-bottom:1px solid var(--edge)}
@@ -69,8 +90,8 @@
 .hall #mobilePanel #tuning{padding-top:6px}
 .hall .exportResult:not(:has(#exportStatus:not(:empty))){display:none}
 .hall .exportResult{position:fixed;right:calc(var(--rail) + 10px);bottom:12px;z-index:6;background:#151b25;border:1px solid var(--edge);border-radius:6px;padding:8px 12px;max-width:calc(100vw - var(--rail) - 22px)}
-@media(max-width:760px){.hall{--rail:60px;--mast:52px}.hall .details h2{font-size:19px}.hall .deck{gap:5px}.hallRail.panelTools button{min-height:49px;font-size:11px}.hall .deck .controls{gap:0}.hall #mobilePanel{padding-inline:12px}.hall .details #artist{line-height:1.35}.hall .deck .play{height:38px;width:38px}}
-@media(max-height:540px){.hall{--mast:44px}.hallRail.panelTools{padding-block:2px;gap:0}.hallRail.panelTools button{min-height:38px;gap:1px}.hallRail.panelTools svg{height:16px}.hall .deck{padding-block:5px}}
+@media(max-width:760px){.hall{--rail:50px;--mast:38px}.hall .details h2{font-size:16px}.hall .deck{padding:5px 8px 2px;gap:0 4px}.hallRail.panelTools button{min-height:44px;font-size:10px}.hall .deck .controls{gap:0}.hall #mobilePanel{padding-inline:12px}.hall .details #artist{line-height:1.35}}
+@media(max-height:540px){.hall{--mast:32px}.hallRail.panelTools{padding-block:2px;gap:0}.hallRail.panelTools button{min-height:38px;gap:1px}.hallRail.panelTools svg{height:16px}.hall .deck{padding-block:5px}}
 
 #shapes{grid-template-columns:repeat(auto-fit,minmax(min(74px,100%),1fr));gap:5px}
 #shapes button{position:relative;display:grid;overflow:hidden;min-width:0;padding:0;border-radius:6px;background:#151b25;color:var(--quiet);text-align:left}
@@ -113,3 +134,5 @@
 #tuningNotes dt{margin-top:8px;color:var(--ink)}
 #tuningNotes dd{margin:2px 0 0;font-size:12px;line-height:1.5}
 @media(pointer:coarse){.adjustGroup summary{min-height:44px}}
+
+@media(pointer:coarse){.hall .controls button{width:44px;height:44px}.hall .progress input{height:28px}}
