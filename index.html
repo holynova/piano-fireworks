@@ -5,11 +5,11 @@
 <meta name="theme-color" content="#0c1019"><title>花火琴房 · 音乐烟花播放器</title>
 <link rel="stylesheet" href="player.css"><link rel="stylesheet" href="tuning-preview.css">
 <link rel="canonical" href="https://piano-fireworks.xiaosang.cc/">
-<meta name="description" content="在花火琴房聆听十首器乐曲，观看逐音绽放的烟花，调节演出并导出音乐短片。">
+<meta name="description" content="在花火琴房聆听三十首器乐曲，观看逐音绽放的烟花，调节演出并导出音乐短片。">
 <script>if(location.protocol==='https:'){const s=document.createElement('script');s.defer=true;s.src='https://cloud.umami.is/script.js';s.dataset.websiteId='e01c9f78-4607-4e60-b01c-77c8190b12b4';document.head.append(s)}</script>
 </head>
 <body class="hall">
-<header class="mast"><div class="brand"><canvas id="brandMark" width="88" height="88" aria-hidden="true"></canvas><h1>花火琴房</h1></div><div class="releaseLinks"><span>v1.1.1</span><a href="https://github.com/holynova/piano-fireworks" target="_blank" rel="noopener">GitHub ↗</a></div></header>
+<header class="mast"><div class="brand"><canvas id="brandMark" width="88" height="88" aria-hidden="true"></canvas><h1>花火琴房</h1></div><div class="releaseLinks"><span>v1.2.0</span><a href="https://github.com/holynova/piano-fireworks" target="_blank" rel="noopener">GitHub ↗</a></div></header>
 <main>
 <div class="concert" id="concert">
 <section class="viewer" aria-label="烟花演出">
@@ -20,7 +20,8 @@
 <div class="details"><span id="tempo"></span><h2 id="song"></h2><span id="artist"></span></div>
 <div class="controls"><button id="previous" class="iconbutton" aria-label="上一曲"><i data-icon="previous"></i></button><button id="play" class="play" aria-label="播放"></button><button id="next" class="iconbutton" aria-label="下一曲"><i data-icon="next"></i></button></div>
 
-<label class="progress"><span id="elapsed">0:00</span><input type="range" id="seek" min="0" max="1" step=".01" value="0" aria-label="播放进度"><span id="duration"></span></label>
+<div class="transportLine"><label class="progress"><span id="elapsed">0:00</span><input type="range" id="seek" min="0" max="1" step=".01" value="0" aria-label="播放进度"><span id="duration"></span></label><button id="queueToggle" aria-label="播放列表" title="播放列表" aria-controls="queuePanel" aria-expanded="false"><i data-icon="tracks"></i></button></div>
+<section id="queuePanel" aria-labelledby="queueTitle" hidden><header><h3 id="queueTitle">播放列表</h3><span id="queuePosition"></span></header><ol id="queueRows"></ol></section>
 <span id="error" role="status"></span>
 </section></div>
 <nav class="hallRail panelTools" aria-label="观演厅工具">
@@ -86,7 +87,7 @@
 </aside></dialog>
 </main>
 <div class="exportResult"><span id="exportStatus" role="status"></span><a id="downloadVideo" hidden>下载 MP4</a></div>
-<dialog id="credits"><div class="dialogHead"><h2>曲谱来源</h2><button class="iconbutton" id="closeCredits" aria-label="关闭"><i data-icon="close"></i></button></div><p>《少女的祈祷》采用 Michael Bednarek 发布于 Wikimedia Commons 的公有领域 MIDI，其余非原创曲目采用 Mutopia Project 的公有领域乐谱。《绿袖子》以尼龙弦吉他演奏，巴赫组曲前奏曲使用大提琴，《演艺人》改编为马林巴版本。本演出依据 MIDI 谱面渲染各乐器音轨，并以同一份音符时间表编排烟花。</p><div id="sourceLinks"></div><p>《夜空练习曲》为本项目原创钢琴小品。</p></dialog>
+<dialog id="credits"><div class="dialogHead"><h2>曲谱来源</h2><button class="iconbutton" id="closeCredits" aria-label="关闭"><i data-icon="close"></i></button></div><p>《少女的祈祷》采用 Michael Bednarek 发布于 Wikimedia Commons 的公有领域 MIDI，其余非原创曲目采用 Mutopia Project 乐谱。各版本的排谱者、许可及本项目的音轨改编见<a href="music/SOURCES.md" target="_blank" rel="noopener">曲库署名</a>。《绿袖子》以尼龙弦吉他演奏，巴赫组曲前奏曲使用大提琴，《演艺人》改编为马林巴版本。本演出依据 MIDI 谱面渲染各乐器音轨，并以同一份音符时间表编排烟花。</p><div id="sourceLinks"></div><p>《夜空练习曲》为本项目原创钢琴小品。</p></dialog>
 <audio id="audio" preload="auto"></audio>
 <script src="music/tracks.js"></script><script src="choreography.js"></script><script src="landscapes.js"></script><script src="fireworks.js"></script><script src="scene.js"></script><script src="tuning-preview.js"></script><script src="tuning.js"></script><script src="project-link.js"></script><script src="share.js"></script><script src="export.js"></script><script src="player.js"></script>
 </body></html>

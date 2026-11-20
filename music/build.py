@@ -33,6 +33,31 @@ TURCA = [
     *repeated(128, 144), *repeated(144, 176),
     (176, 192), (176, 191), (192, 255)
 ]
+# These editions use their own MIDI tempo maps, including changes within a movement.
+CLASSIC_PIANO = [
+    ('moonlight', '月光奏鸣曲 · 第一乐章', '贝多芬', 'Op. 27 No. 2', 60, 'slow', 276, None),
+    ('nocturne', '降 E 大调夜曲', '肖邦', 'Op. 9 No. 2', 66, 'lyric', 1590, None),
+    ('facile', 'C 大调奏鸣曲 · 第一乐章', '莫扎特', 'K. 545', 132, 'fast', 998, None),
+    ('kinderszenen', '童年情景 · 异国和异国人民', '舒曼', 'Op. 15 No. 1', 72, 'lyric', 354, None),
+    ('minute', '小狗圆舞曲', '肖邦', 'Op. 64 No. 1', 280, 'fast', 483, None),
+    ('pathetique', '悲怆奏鸣曲 · 第二乐章', '贝多芬', 'Op. 13', 36, 'slow', 295, None),
+    ('invention', '第一首二部创意曲', '巴赫', 'BWV 772', 80, 'lyric', 40, None),
+    ('fantaisie', '幻想即兴曲', '肖邦', 'Op. 66', 168, 'fast', 1693, None),
+    ('eminor', 'E 小调前奏曲', '肖邦', 'Op. 28 No. 4', 48, 'slow', 921, None),
+    ('maple', '枫叶拉格', '斯科特·乔普林', '拉格泰姆', 120, 'fast', 23, None),
+    ('debussy_arabesque', '第一号阿拉伯风格曲', '德彪西', 'L. 66 No. 1', 144, 'lyric', 1777, None),
+    ('raindrop', '雨滴前奏曲', '肖邦', 'Op. 28 No. 15', 80, 'slow', 471, None),
+    ('mountain_king', '山魔王的宫殿', '格里格', 'Op. 46 No. 4 · 钢琴版', 138, 'fast', 1888, None),
+    ('consolation', '第三号安慰曲', '李斯特', 'S. 172 No. 3', 60, 'slow', 1647, None),
+    ('gondola', '威尼斯船歌', '门德尔松', 'Op. 30 No. 6', 60, 'lyric', 1741, None),
+    ('bells', '升 C 小调前奏曲', '拉赫玛尼诺夫', 'Op. 3 No. 2', 60, 'lyric', 2033, None),
+    ('schubert_impromptu', '降 G 大调即兴曲', '舒伯特', 'D. 899 No. 3', 120, 'lyric', 1193, None),
+    ('gnossienne', '第一号玄秘曲', '萨蒂', 'Gnossienne No. 1', 100, 'slow', 2035, None),
+    ('carmen', '卡门序曲', '比才', '钢琴版', 116, 'fast', 635, None),
+    ('minuet_g', 'G 大调小步舞曲', '佩措尔德', 'BWV Anh. 114', 140, 'lyric', 75, None),
+]
+CLASSIC_IDS = {piece[0] for piece in CLASSIC_PIANO}
+
 PIECES = [
     ('turca', '土耳其进行曲', '莫扎特', '稍快板', 126, 'fast', 108, TURCA),
     ('elise', '致爱丽丝', '贝多芬', '稍快而流动', 72, 'lyric', 931,
@@ -47,6 +72,7 @@ PIECES = [
     ('greensleeves', '绿袖子', '英格兰民谣', '民谣', 108, 'lyric', 109, None),
     ('cello', '第一大提琴组曲 · 前奏曲', '巴赫', '巴洛克', 80, 'lyric', 517, None),
     ('entertainer', '演艺人', '斯科特·乔普林', '拉格泰姆', 84, 'fast', 263, None),
+    *CLASSIC_PIANO,
 ]
 
 
@@ -115,7 +141,7 @@ def continuous_performance(name, tempo):
     for msg in mido.merge_tracks(midi.tracks):
         tick += msg.time
         beat = tick / midi.ticks_per_beat
-        if name == 'prayer' and msg.type == 'set_tempo':
+        if (name == 'prayer' or name in CLASSIC_IDS) and msg.type == 'set_tempo':
             tempos[beat] = mido.tempo2bpm(msg.tempo)
         if msg.type == 'control_change' and msg.control == 64:
             pedal[msg.channel].append((beat, msg.value >= 64))
@@ -142,6 +168,8 @@ def continuous_performance(name, tempo):
     pedal_beats = {ch:[b for b,_ in events] for ch,events in pedal.items()}
     releases = {ch:[b for b,down in events if not down] for ch,events in pedal.items()}
     notes = []
+    # Some score previews have a single attack velocity on both staves.
+    shape_touches = name in CLASSIC_IDS and len({n[3] for n in raw}) == 1
     for start,end,pitch,vel,channel in raw:
         if channel in pedal:
             i = bisect_right(pedal_beats[channel],end)-1
@@ -165,6 +193,8 @@ def continuous_performance(name, tempo):
         elif name == 'entertainer':
             # Bring out the syncopated melody over the stride bass.
             vel = round((77 if pitch >= 60 else 65) + (6 if start % 1 else 0) + 3*math.sin(start*math.pi/8))
+        elif shape_touches:
+            vel = round(65 + max(-10, min(12, (pitch-60)*.4)) + 4*math.cos(start*math.pi/8))
         notes.append(dict(start=clock(start),end=clock(end),pitch=pitch,velocity=vel))
     duration = round(max(n['end'] for n in notes)+1.8,3)
     active_tempo = segments[bisect_right(starts,first)-1][2]

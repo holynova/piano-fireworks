@@ -11,5 +11,5 @@ for(const name of ['index.html','player.css','tuning-preview.css','tuning-previe
   await cp(path.join(root,name),path.join(dist,name),{recursive:true});
 }
 for(const name of await readdir(path.join(root,'music'))){
-  if(name==='tracks.js'||name.endsWith('.m4a'))await cp(path.join(root,'music',name),path.join(dist,'music',name));
+  if(name==='SOURCES.md'||name==='tracks.js'||name.endsWith('.m4a'))await cp(path.join(root,'music',name),path.join(dist,'music',name));
 }

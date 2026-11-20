@@ -1,12 +1,14 @@
 # Piano Fireworks
 
-Ten instrumental pieces, each with its own fireworks display. Start with *A Maiden’s Prayer* and watch a shell lift from the riverbank in time to open on a piano note.
+Thirty instrumental pieces, each with its own fireworks display. Start with *A Maiden’s Prayer* and watch a shell lift from the riverbank in time to open on a piano note.
 
 **[Enter the concert hall](https://piano-fireworks.xiaosang.cc/)**　·　[Watch the 22-second excerpt with sound](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)　·　[简体中文](README.md)
 
 [![A frame from A Maiden’s Prayer. Gold marks plot the piano notes from 0:36 to 0:54. The white line marks the instant shown. Select to play.](assets/readme/concert-programme.webp)](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)
 
 ## Hear the same chord two ways
+
+Open the playlist at the right end of the transport to choose a piece.
 
 Open the tuning panel (调校) and loop six seconds (循环试听 6 秒). Set preset A to one burst per note (每个音符) and B to group simultaneous notes (同拍合并). Switch between them as the phrase repeats. A chord that fills the sky with several shells now lands as a single burst.
 
@@ -22,11 +24,11 @@ The hall opens in classic firework colors. Choose peony or willow shells, turn u
 | Joplin, *The Entertainer* | Marimba | The bursts trace the offbeat accents of the rag |
 
 <details>
-<summary>See the player and all ten pieces</summary>
+<summary>See the player and all thirty pieces</summary>
 
 ![The concert hall with the performance and transport on the left and the track list on the right.](assets/screenshot.png)
 
-[Score credits and recording notes for all ten pieces (Chinese)](music/SOURCES.md)
+[Score credits and recording notes for all thirty pieces (Chinese)](music/SOURCES.md)
 
 </details>
 

@@ -1,12 +1,14 @@
 # 花火琴房
 
-十首器乐曲的网页烟花演出。点开《少女的祈祷》，看烟花先从岸边升起，在琴键落下的那一刻绽开。
+三十首器乐曲的网页烟花演出。点开《少女的祈祷》，看烟花先从岸边升起，在琴键落下的那一刻绽开。
 
 **[进入观演厅](https://piano-fireworks.xiaosang.cc/)**　·　[看 22 秒有声演示](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)　·　[English](README.en.md)
 
 [![《少女的祈祷》实录。封面下方的金线是 0:36 至 0:54 的音符，白线标出画面所在时刻。点击播放。](assets/readme/concert-programme.webp)](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)
 
 ## 听一遍，再换一种放法
+
+播放条右端可打开播放列表，点曲名即可切歌。
 
 在右侧打开「调校」，点「循环试听 6 秒」。把方案 A 设为「每个音符」，方案 B 设为「同拍合并」。切换 A/B，你会看到同一个和弦从几朵同时绽放的烟花，变成一次集中的爆点。
 
@@ -26,7 +28,7 @@
 
 ![网页观演厅，左侧是演出与播放进度，右侧是曲目单。](assets/screenshot.png)
 
-[十首曲目的乐谱来源与音轨制作](music/SOURCES.md)
+[三十首曲目的乐谱来源与音轨制作](music/SOURCES.md)
 
 </details>
 
