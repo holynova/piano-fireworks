@@ -19,15 +19,21 @@ window.Fireworks = (() => {
   ];
   const themes={gold:[0],silver:[8],red:[1],green:[2],ice:[4],duo:[0,8],
     classic:[0,1,0,2,8],all:[0,1,2,3,4,5,6,7]};
-  const tourViews=['far','mid','near','ground','drone'];
-  const defaults={trigger:'note',shapes:['peony','chrys'],palette:'gold',offset:0,
-    brightness:78,overlap:75,height:100,decay:1.25,attack:75,salvos:'phrases',finale:true,launch:true,camera:'glide',view:'auto',tourViews,shotTime:8,windSpeed:2.5,windDirection:0,backdrop:'score',staging:'score',ending:'score'};
+  const tourViews=['mid','near','ground','drone'];
+  const defaults={theme:'fireworks',trigger:'chord',shapes:['peony','chrys','willow','palm','crown','strobe','horsetail','dahlia'],palette:'classic',offset:0,
+    brightness:90,overlap:75,height:100,decay:1.25,attack:75,salvos:'phrases',finale:true,launch:true,camera:'fly',view:'auto',tourViews:['near','ground','drone'],shotTime:8,windSpeed:4,windDirection:0,backdrop:'city',staging:'score',ending:'score'};
   function normalize(input={}) {
     const shapes=Array.isArray(input.shapes)?Object.keys(kinds).filter(k=>input.shapes.includes(k)):[];
     const limit=(key,min,max)=>Number.isFinite(input[key])?Math.max(min,Math.min(max,input[key])):defaults[key];
     const selected=Array.isArray(input.tourViews)?tourViews.filter(id=>input.tourViews.includes(id)):[];
+    // Migrate the retired far camera in previously saved A/B configurations.
+    if(Array.isArray(input.tourViews) && input.tourViews.includes('far') && selected.length<2){
+      for(const id of ['mid','near'])if(selected.length<2 && !selected.includes(id))selected.push(id);
+    }
+    const view=input.view==='far'?'mid':input.view;
     return {
-      tourViews:selected.length>=2?selected:[...tourViews],shotTime:limit('shotTime',4,20),
+      theme:defaults.theme,
+      tourViews:selected.length>=2?selected:[...defaults.tourViews],shotTime:limit('shotTime',4,20),
       windSpeed:limit('windSpeed',0,12),windDirection:[0,45,90,135,180,225,270,315].includes(input.windDirection)?input.windDirection:0,
       staging:input.staging==='fixed'?'fixed':'score',
       ending:['score','ring','fan','arc'].includes(input.ending)?input.ending:defaults.ending,
@@ -40,7 +46,7 @@ window.Fireworks = (() => {
       finale:typeof input.finale==='boolean'?input.finale:defaults.finale,
       launch:typeof input.launch==='boolean'?input.launch:defaults.launch,
       backdrop:Object.hasOwn(Landscapes.scenes,input.backdrop)?input.backdrop:defaults.backdrop,
-      view:['auto',...tourViews].includes(input.view)?input.view:defaults.view,
+      view:['auto',...tourViews].includes(view)?view:defaults.view,
       camera:['fly','glide','fixed'].includes(input.camera)?input.camera:defaults.camera
     };
   }
@@ -86,9 +92,21 @@ window.Fireworks = (() => {
     const drift=Math.expm1(phase)/Math.expm1(riseDrag);
     return [s.cx+(s.bank-s.cx)*drift,y,s.z+(bankZ-s.z)*drift];
   }
-  function styleCue(s,i,config) {
-    const colors=themes[config.palette];
-    return {...s,kind:config.shapes[i%config.shapes.length],color:colors[(config.palette==='classic'?Math.max(0,Math.floor(s.t/6)):i)%colors.length]};
+  function cueStylist(config,seed) {
+    const colors=themes[config.palette],rand=random(seed);
+    let lastTime,lastColor;
+    return (s,i)=>{
+      let color;
+      if(config.palette==='classic'){
+        // Keep gold's extra weight. Neighbouring shells in a volley contrast.
+        const choices=s.t===lastTime?colors.filter(id=>id!==lastColor):colors;
+        color=choices[Math.floor(rand()*choices.length)];
+        lastTime=s.t;lastColor=color;
+      }else{
+        color=colors[i%colors.length];
+      }
+      return {...s,kind:config.shapes[i%config.shapes.length],color};
+    };
   }
   function planSpacing(list) {
     // Work in score order so a seek or dropped frame cannot change a note's position.
@@ -117,6 +135,7 @@ window.Fireworks = (() => {
     }
   }
   function build(track,config=defaults) {
+    const styleCue=cueStylist(config,Math.round(track.duration*1000)+track.notes.length);
     const groups=[];
     for(const note of track.notes){
       const [t,p,v]=note;
@@ -144,7 +163,7 @@ window.Fireworks = (() => {
       const s=cue(t,x,y,z,size,'peony',0,7919+serial*29);
       s.velocity=velocity;
       s.noteBurst=true;
-      list.push(styleCue(s,serial++,config));
+      list.push(styleCue(s,serial++));
     }
     for(const g of groups){
       if(config.trigger==='note'){
@@ -165,7 +184,7 @@ window.Fireworks = (() => {
       points.forEach(([x,y,z,size],i)=>{
         const s=cue(formation.t,x,y,z,size,'peony',0,seed+i);
         s.formation=formation;
-        list.push(styleCue(s,i,config));
+        list.push(styleCue(s,i));
       });
     }
     for(const formation of salvos){
@@ -224,7 +243,7 @@ window.Fireworks = (() => {
   return {build,particles,kinds,palettes,random,defaults,normalize,
     metres,gravity,deck,banks,bankZ,flight,
     previewFor(config){
-      const list=preview.map((s,i)=>styleCue(s,i,config)).sort((a,b)=>a.t-b.t);
+      const list=preview.map(cueStylist(config,371)).sort((a,b)=>a.t-b.t);
       planFlights(list,config);
       return list;
     }};

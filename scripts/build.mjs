@@ -7,7 +7,7 @@ const dist=path.join(root,'dist');
 await rm(dist,{recursive:true,force:true});
 await mkdir(path.join(dist,'music'),{recursive:true});
 for(const name of ['index.html','player.css','tuning-preview.css','tuning-preview.html','player.js',
-  'tuning.js','tuning-preview.js','choreography.js','landscapes.js','fireworks.js','scene.js','project-link.js','export.js','vendor']){
+  'tuning.js','tuning-preview.js','choreography.js','landscapes.js','fireworks.js','scene.js','project-link.js','share.js','export.js','vendor','assets/shapes','media/maidens-prayer.mp4']){
   await cp(path.join(root,name),path.join(dist,name),{recursive:true});
 }
 for(const name of await readdir(path.join(root,'music'))){

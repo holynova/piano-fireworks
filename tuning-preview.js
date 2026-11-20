@@ -1,9 +1,9 @@
 // Each proposal rearranges the same live inputs. The player remains their source of truth.
 (() => {
   const modes={quick:'常用面板',guide:'按任务调',compare:'对照调台'};
-  let mode=new URLSearchParams(location.search).get('panel');
-  const trial=Object.hasOwn(modes,mode);
-  if(!trial)mode='quick';
+  const requested=new URLSearchParams(location.search).get('panel');
+  const trial=Object.hasOwn(modes,requested);
+  const mode=trial?requested:'quick';
   const $=id=>document.getElementById(id);
   function el(tag,cls,text){
     const n=document.createElement(tag);
@@ -28,8 +28,8 @@
     ['换个视角',['backdrop','view','camera','launch','height','windDirection','windSpeed']],
     ['安排齐放',['staging','salvos','finale']]
   ];
-  const presets=['brightness','backdrop','palette'];
-  const colors={gold:'#dfab63',classic:'linear-gradient(90deg,#ddad66 33%,#b94b43 33% 66%,#75a07c 66%)',silver:'#c8cbd2',red:'#c35d56',green:'#80ae85',ice:'#6085c0',duo:'linear-gradient(90deg,#dfab63 50%,#c8cbd2 50%)',all:'linear-gradient(90deg,#c7675e,#c5ab67,#85b3ad,#8c7bac)'};
+  const presets=['brightness','backdrop','palette','shapes'];
+  const colors={gold:'#dfab63',classic:'linear-gradient(90deg,#ddad66 40%,#b94b43 40% 60%,#75a07c 60% 80%,#c8cbd2 80%)',silver:'#c8cbd2',red:'#c35d56',green:'#80ae85',ice:'#6085c0',duo:'linear-gradient(90deg,#dfab63 50%,#c8cbd2 50%)',all:'linear-gradient(90deg,#c7675e,#c5ab67,#85b3ad,#8c7bac)'};
   const directionOrder=['135','90','45','180','center','0','225','270','315'];
   const shortWind={'135':'左远','90':'远岸','45':'右远','180':'左岸','0':'右岸','225':'左近','270':'近岸','315':'右近'};
   const arrows={'135':'↖','90':'↑','45':'↗','180':'←','0':'→','225':'↙','270':'↓','315':'↘'};
@@ -80,28 +80,28 @@
     field.view.append($('tourOptions'));
     $('tourOptions').append(field.shotTime);
     field.trigger.append($('coverage'));
-    field.staging.append(root.querySelector('.sectionCue'),$('sectionHint'));
-    field.overlap.append($('overlapHint'));field.height.append($('heightHint'));
+    field.staging.append(root.querySelector('.sectionCue'));
+    field.height.append($('heightHint'));
     field.salvos.append($('salvoCues'));
     for(const id of ['launch','finale']){
       const label=$(id).closest('label');label.classList.add('checkField');
       wrap(id,label.textContent.trim(),label);
     }
     $('endingOptions').prepend(field.ending);field.finale.append($('endingOptions'));
-    wrap('shapes','烟花花型',root.querySelector('.shapePicker'));
-    const switcher=el('nav','proposalSwitch');
-    switcher.setAttribute('aria-label','调校面板方案');
+    wrap('shapes','花型',root.querySelector('.shapePicker'));
     const heading=el('div','proposalHeading');
-    heading.append(el('h3','','调校面板试用'));
-    const back=el('a','','返回常规面板');back.href='index.html';heading.append(back);
-    const tools=el('div','testTools');tools.append(slots,loop);
-    root.replaceChildren(...(trial?[heading,switcher]:[]),body,depot);
-    let activeTask=0,selected='brightness',snapshot,currentSlot;
+    if(trial){
+      heading.append(el('h3','',modes[mode]));
+      const back=el('a','','调校方案');back.href='tuning-preview.html';heading.append(back);
+    }
+    const tools=el('div','testTools');tools.append(slots,loop,$('tuningNotes'));
+    root.replaceChildren(...(trial?[heading]:[]),body,depot);
+    let selected='brightness';
     const work=el('div','panelContent');
     function place(container,ids){for(const id of ids)container.append(field[id])}
     function group(title,ids){
       const d=el('details','adjustGroup'),summary=el('summary','',title);
-      d.append(summary);place(d,ids);return d;
+      d.open=true;d.append(summary);place(d,ids);return d;
     }
     function showQuick(){
       place(work,presets);
@@ -110,15 +110,8 @@
       work.append(details,tools);
     }
     function showGuide(){
-      const tabs=el('div','taskMenu'),pane=el('div','taskPane');
-      function selectTask(i){
-        activeTask=i;
-        [...tabs.children].forEach((b,j)=>b.setAttribute('aria-pressed',j===i));
-        depot.append(...pane.children);
-        place(pane,tasks[i][1]);
-      }
-      tasks.forEach(([name],i)=>tabs.append(button(name,()=>selectTask(i))));
-      work.append(tabs,tools,pane);selectTask(activeTask);
+      for(const [name,ids] of tasks)work.append(group(name,ids));
+      work.append(tools);
     }
     const compareIds=['brightness','overlap','offset','windSpeed','decay','height','attack'];
     const suffix={brightness:'%',overlap:'%',offset:' ms',windSpeed:' m/s',decay:' 秒',height:'%',attack:'%'};
@@ -143,21 +136,9 @@
         if(rest.length)work.append(group(name,rest));
       }
     }
-    function render(){
-      for(const [,ids] of groups)place(depot,ids);
-      depot.append(tools);cells.length=0;work.replaceChildren();body.replaceChildren(work);
-      for(const b of switcher.children)b.setAttribute('aria-pressed',b.dataset.mode===mode);
-      if(mode==='quick')showQuick();else if(mode==='guide')showGuide();else showCompare();
-      if(snapshot)sync(snapshot,currentSlot);
-    }
-    for(const [key,name] of Object.entries(modes)){
-      const b=button(name,()=>{
-        if(mode===key)return;
-        mode=key;render();
-      });b.dataset.mode=key;switcher.append(b);
-    }
+    body.append(work);
+    if(mode==='guide')showGuide();else if(mode==='compare')showCompare();else showQuick();
     function sync(configs,slot){
-      snapshot=configs;currentSlot=slot;
       for(const {select,radio} of picks)radio.checked=select.value===radio.value;
       for(const r of ranges){
         r.parentElement.style.setProperty('--fill',100*(r.value-r.min)/(r.max-r.min)+'%');
@@ -169,7 +150,7 @@
         a.classList.toggle('editing',slot==='A');other.classList.toggle('editing',slot==='B');
       }
     }
-    render();return {sync};
+    return {sync};
   }
   window.TuningPreview={mount,trial};
 })();

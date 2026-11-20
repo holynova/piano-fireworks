@@ -1,7 +1,6 @@
 // Viewing distance, eye elevation and target elevation are in metres.
 // For ground observers the elevation includes the height of the bank or terrace.
 const shoreViews={
-  far:   {distance:940, eye:26,   target:116, angle:-.15, lens:1.02},
   mid:   {distance:570, eye:18.75,target:134, angle:0,    lens:1.12},
   near:  {distance:310, eye:5.2,  target:150, angle:.27,  lens:1.08},
   ground:{distance:145, eye:1.65, target:160, angle:-.10, lens:.83}
@@ -49,7 +48,7 @@ class FireworkStage {
   makeCity(layer,rand) {
     const c=document.createElement('canvas');c.width=2200;c.height=154;
     const g=c.getContext('2d');let x=0;
-    const fills=['#334056','#222e42','#101b2b'];
+    const fills=Landscapes.scenes.city.fills;
     while(x<c.width) {
       const width=8+rand()*(20+5*layer),height=6+rand()**1.7*(54+layer*8);
       const top=c.height-height;
@@ -72,7 +71,7 @@ class FireworkStage {
     for(let i=0;i<70;i++){
       const x=rand()*760-20,y=100+rand()*230,rad=24+rand()*100;
       const a=g.createRadialGradient(x,y,0,x,y,rad);
-      a.addColorStop(0,i%3?'rgba(80,83,139,.048)':'rgba(158,100,113,.064)');a.addColorStop(1,'transparent');
+      a.addColorStop(0,i%3?'rgba(39,49,76,.025)':'rgba(51,54,70,.024)');a.addColorStop(1,'transparent');
       g.fillStyle=a;g.fillRect(x-rad,y-rad,rad*2,rad*2);
     }
     this.clouds=c;
@@ -82,7 +81,7 @@ class FireworkStage {
       const x=rand()*1080-60,y=35+rand()*125,width=20+rand()**2*185;
       brush.save();brush.translate(x,y);brush.rotate(-.025+.05*rand());brush.scale(width,1+rand()*5);
       const streak=brush.createRadialGradient(0,0,0,0,0,1);
-      streak.addColorStop(0,'rgba(239,161,137,.18)');streak.addColorStop(1,'rgba(239,161,137,0)');
+      streak.addColorStop(0,'rgba(96,112,139,.045)');streak.addColorStop(1,'rgba(96,112,139,0)');
       brush.fillStyle=streak;brush.fillRect(-1,-1,2,2);brush.restore();
     }
     this.wisps=wisps;
@@ -173,7 +172,7 @@ class FireworkStage {
     g.drawImage(this.clouds,-w*(.14+c.fx*.12),shore-h*.93,w*1.28,h*.99);
     if(id==='coast')g.drawImage(this.wisps,-w*(.14+c.fx*.12),horizon-h*.56,w*1.28,h*.54);
     this.drawStars(this.stars,t,horizon,look.stars);
-    if(id==='prairie')this.drawStars(this.galaxy,t,horizon,.86,true);
+    if(id==='prairie')this.drawStars(this.galaxy,t,horizon,.68,true);
     if(id==='alpine'){
       const moon=this.project(-470,620,-1550);
       if(moon){
@@ -225,7 +224,7 @@ class FireworkStage {
       if(x<0||x>w||y<0||y>h||y>horizon)continue;
       if(dust && phase<1.2){
         const radius=(.045+.15*s)*c.f/depth;
-        this.glow(g,x,y,radius,phase<.6?'#a9a9c7':'#a99bb0',.15+.08*s);
+        this.glow(g,x,y,radius,phase<.6?'#a9a9c7':'#a99bb0',.034+.022*s);
       }
       g.globalAlpha=brightness*(.19+.48*s)*(.9+.1*Math.sin(phase+t*.6));g.fillStyle='#dbe6ff';g.fillRect(x,y,s,s);
     }
@@ -250,11 +249,11 @@ class FireworkStage {
     const g=this.ctx,w=this.w,h=this.h;
     if(shore>=h)return;
     const field=g.createLinearGradient(0,shore,0,h);
-    field.addColorStop(0,'#293332');field.addColorStop(.42,'#1d2928');field.addColorStop(1,'#121f20');
+    field.addColorStop(0,'#15201e');field.addColorStop(.42,'#101a18');field.addColorStop(1,'#0a1112');
     g.fillStyle=field;g.fillRect(0,shore,w,h-shore);
     // A winding track gives the aerial view a scale cue on dry land.
     let previous=null;
-    g.fillStyle='#38403b';g.beginPath();
+    g.fillStyle='#202824';g.beginPath();
     for(let z=Landscapes.scenes.prairie.depths[2];z<68;z+=1.2){
       const x=-14+4*Math.sin(z*.077)+1.4*Math.sin(z*.127);
       const left=this.project(x-.14,.02,z),right=this.project(x+.14,.02,z);
@@ -264,7 +263,7 @@ class FireworkStage {
       previous=[left,right];
     }
     g.fill();
-    g.strokeStyle='#465046';g.lineWidth=.7;g.globalAlpha=.52;g.beginPath();
+    g.strokeStyle='#334036';g.lineWidth=.7;g.globalAlpha=.52;g.beginPath();
     for(const [x,z,length] of this.ripples){
       const p=this.project(x,.04,z);
       if(!p||p[1]<shore||p[1]>h||p[0]<0||p[0]>w)continue;

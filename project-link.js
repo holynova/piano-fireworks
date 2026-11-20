@@ -32,3 +32,13 @@ window.ProjectLink = {
     "11111110101110110101000011100"
   ]
 };
+
+// Four white modules on every edge keep the same project code scannable in print and video.
+ProjectLink.drawQR=function(g,x,y,cell){
+  const modules=this.modules,size=(modules.length+8)*cell;
+  g.fillStyle='#fff';g.fillRect(x,y,size,size);
+  g.fillStyle='#101318';
+  modules.forEach((row,j)=>{
+    for(let i=0;i<row.length;i++)if(row[i]==='1')g.fillRect(x+(i+4)*cell,y+(j+4)*cell,cell,cell);
+  });
+};

@@ -1,14 +1,14 @@
 // All terrain tiles repeat at their edges and stay at a fixed depth in stage space.
 window.Landscapes=(()=>{
   const scenes={
-    city:{name:'城市夜景',sky:['#040916','#101a34','#29334d','#4d4354'],water:'#0a1220',waves:1,stars:1,
-      depths:[-105,-76,-50],fills:['#253043','#1d293a','#101b2b'],texel:.06},
-    alpine:{name:'雪山静湖',sky:['#041220','#102b3b','#355159','#66777a'],water:'#0b222b',waves:.45,stars:.93,
-      depths:[-164,-110,-66],fills:['#354952','#263b42','#122c30'],texel:.102},
-    coast:{name:'暮色海湾',sky:['#11152a','#38314a','#755465','#b87e6d'],water:'#221e30',waves:1.65,stars:.48,
-      depths:[-220,-148,-106],fills:['#594756','#403644','#302c3b'],texel:.105},
-    prairie:{name:'星河草原',sky:['#070c20','#191d39','#38364c','#605461'],stars:1.14,
-      depths:[-172,-110,-68],fills:['#42414b','#313940','#263235'],texel:.095}
+    city:{name:'城市夜景',sky:['#010204','#03060c','#080e18','#131a23'],water:'#050a10',waves:1,stars:1,
+      depths:[-105,-76,-50],fills:['#18212e','#121b26','#0c131d'],texel:.06},
+    alpine:{name:'雪山静湖',sky:['#010305','#03080d','#0a1219','#121f26'],water:'#050d11',waves:.45,stars:.93,
+      depths:[-164,-110,-66],fills:['#1e2a33','#15212a','#0c191e'],texel:.102},
+    coast:{name:'深夜海湾',sky:['#020205','#060710','#0c101b','#181b27'],water:'#070b14',waves:1.65,stars:.48,
+      depths:[-220,-148,-106],fills:['#1a1c28','#131722','#0d121c'],texel:.105},
+    prairie:{name:'星河草原',sky:['#010204','#04050b','#090d16','#121822'],stars:1.14,
+      depths:[-172,-110,-68],fills:['#191d26','#121b20','#0e191b'],texel:.095}
   };
   const programs={greensleeves:'prairie',cello:'alpine',entertainer:'city',turca:'coast',elise:'city',gymnopedie:'prairie',original:'city',prayer:'alpine',clair:'alpine',prelude:'prairie'};
   function resolve(choice,track){return Object.hasOwn(scenes,choice)?choice:programs[track?.id]||'city'}
@@ -50,7 +50,7 @@ window.Landscapes=(()=>{
       outline[x]=h-height;
     }
     const fill=g.createLinearGradient(0,0,0,h);
-    fill.addColorStop(0,id==='alpine'?'#647b81':scene.fills[layer]);fill.addColorStop(1,scene.fills[layer]);
+    fill.addColorStop(0,id==='alpine'?'#2e3c49':scene.fills[layer]);fill.addColorStop(1,scene.fills[layer]);
     g.fillStyle=fill;g.beginPath();g.moveTo(0,h);
     for(let x=0;x<w;x+=2)g.lineTo(x,outline[x]);
     g.lineTo(w,outline[0]);g.lineTo(w,h);g.fill();
@@ -60,14 +60,14 @@ window.Landscapes=(()=>{
         const u=x/w,top=outline[x];
         const slope=outline[(x+7)%w]-top;
         const snow=Math.max(0,(h-top-126)*.46+13*fine(u)-7*grain(u));
-        g.fillStyle=slope>0?'#9caeb3':'#607984';
+        g.fillStyle=slope>0?'#556676':'#354753';
         g.fillRect(x,top,1,snow*(.46+.54*fine((u*3)%1)));
-        g.fillStyle='rgba(114,141,148,.20)';
+        g.fillStyle='rgba(78,98,110,.18)';
         g.fillRect(x,top+snow,1,Math.max(0,16+slope)*broad(u));
       }
     }
     if(id==='alpine'&&layer===2){
-      g.fillStyle='#11292e';g.beginPath();
+      g.fillStyle='#0c181e';g.beginPath();
       for(let x=2;x<w-4;x+=3){
         const y=outline[x]+1,size=3+rand()*10;
         g.moveTo(x-size*.23,y);g.lineTo(x,y-size);g.lineTo(x+size*.24,y);

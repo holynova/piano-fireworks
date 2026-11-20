@@ -3,8 +3,8 @@
   const stage=new FireworkStage($('scene')),time=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
   const art={
     tracks:'<path d="M3 6h16M3 12h9M3 18h5m10-8v9m0-9 4-1"/><ellipse cx="16" cy="19" rx="2" ry="1.5"/>',
-    landscape:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.3"/><path d="m3 17 5-5 4 4 4-6 5 7"/>',
     tune:'<path d="M3 6h5m4 0h9M3 12h11m4 0h3M3 18h3m4 0h11"/><circle cx="10" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',
+    share:'<path d="M12 15V3m-4 4 4-4 4 4M6 10H4v11h16V10h-2"/>',
     download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/>',
     previous:'<path d="M5 5v14m14-13L8 12l11 6z" fill="currentColor"/>',
     next:'<path d="M19 5v14M5 6l11 6-11 6z" fill="currentColor"/>',
@@ -50,7 +50,14 @@
     g.globalAlpha=1;
   }
   let index=0,poster=true,frame=0,revision=0,keyState=null,drawnKeys='',lastUI=-1;
-  let opening=0,restoringSound=false,muted=audio.muted;
+  const prefKey='piano-fireworks.player.v1.';
+  function preference(key){
+    try{return localStorage.getItem(prefKey+key)}catch{return null}
+  }
+  function remember(key,value){
+    try{localStorage.setItem(prefKey+key,value)}catch{}
+  }
+  let opening=0,restoringSound=false,muted=preference('muted')==='true';
   function scoreTime(){return (audio.currentTime||0)-opening}
   function syncSound(){audio.muted=muted||opening>0||restoringSound}
   function leaveOpening(t){
@@ -84,14 +91,15 @@
   $('count').textContent=tracks.length+' 首';
   function select(i){
     ++revision;audio.pause();opening=0;restoringSound=false;syncSound();index=(i+tracks.length)%tracks.length;
-    const tr=tracks[index];stage.select(tr,config);
+    const tr=tracks[index];remember('track',tr.id);stage.select(tr,config);
     loopRange=null;updateLoopLabel();showCoverage();
     poster=true;audio.src=tr.src;audio.load();$('error').textContent='';
-    $('song').textContent=tr.title;$('artist').textContent=tr.composer+' · '+(tr.instrument || '钢琴')+' · '+tr.mark;
+    $('song').textContent=tr.title;$('artist').textContent=tr.composer+' · '+(tr.instrument || '钢琴');
     $('tempo').textContent=tr.tempo+' BPM';$('duration').textContent=time(tr.duration);
     $('seek').max=tr.duration;
     buttons.forEach((b,n)=>b.setAttribute('aria-pressed',String(n===index)));
     lastUI=-1;drawnKeys='';refresh();request();
+    if(drawer.open && !$('sharePanel').hidden)updateShare();
   }
   async function play(){
     const token=++revision;
@@ -146,7 +154,7 @@
   $('play').onclick=toggle;
   $('scene').onclick=()=>{if(isFull())exitShow();else toggle()};
   $('previous').onclick=()=>{select(index-1);play()};$('next').onclick=()=>{select(index+1);play()};
-  $('mute').onclick=()=>{muted=!muted;syncSound();refresh()};
+  $('mute').onclick=()=>{muted=!muted;remember('muted',String(muted));syncSound();refresh()};
   function updateSection(time){
     const parts=stage.script.parts;
     const number=Choreography.sectionAt(parts,time-config.offset/1000);
@@ -192,19 +200,19 @@
   }
   function showCoverage(){
     const notes=tracks[index].notes.length;
+    $('coverage').textContent=notes.toLocaleString()+' 音符 · '+stage.script.count.toLocaleString()+' 次触发';
     const place=Landscapes.resolve('score',tracks[index]);
     $('backdrop').options[0].textContent='随曲目 · '+Landscapes.scenes[place].name;
     const environment=Landscapes.scenes[Landscapes.resolve(config.backdrop,tracks[index])];
     $('scene').setAttribute('aria-label',environment.name+'中随演奏音符绽放的烟花');
     const {peak,ending,minLead,maxLead,minHeight,maxHeight}=stage.script;
-    $('heightHint').textContent='本曲爆点 '+Math.round(minHeight)+'–'+Math.round(maxHeight)+' 米，升空 '+minLead.toFixed(1)+'–'+maxLead.toFixed(1)+' 秒。';
+    $('heightHint').textContent='爆点 '+Math.round(minHeight)+'–'+Math.round(maxHeight)+' 米 · 升空 '+minLead.toFixed(1)+'–'+maxLead.toFixed(1)+' 秒';
     showSalvos();
-    $('endingOptions').hidden=peak==null;
+    $('endingOptions').hidden=$('endingNoteLabel').hidden=$('endingDetail').hidden=peak==null;
     const info=Choreography.endings[ending];
     $('endingDetail').textContent=info.name+' · '+info.detail;
-    if(peak!=null)$('previewEnding').textContent='试听终场 · '+time(peak+config.offset/1000)+' ›';
+    if(peak!=null)$('previewEnding').textContent='试听'+info.name+' · '+time(peak+config.offset/1000)+' ›';
     updateSection(Math.max(0,scoreTime()));
-    $('coverage').textContent=notes.toLocaleString()+' 个音符 · '+stage.script.count.toLocaleString()+' 次触发';
   }
   let config=setupTuning({configure(next){
     const rebuild=config.salvos!==next.salvos || config.height!==next.height || config.overlap!==next.overlap || config.trigger!==next.trigger || config.palette!==next.palette ||
@@ -224,7 +232,7 @@
   }
   function updateLoopLabel(){
     $('loop').setAttribute('aria-pressed',Boolean(loopRange));
-    $('loop').textContent=loopRange?'结束循环 · '+time(loopRange.start)+' – '+time(loopRange.end):'循环试听此处 6 秒';
+    $('loop').textContent=loopRange?'结束循环 · '+time(loopRange.start)+' – '+time(loopRange.end):'循环试听 6 秒';
   }
   function enforceLoop(){
     if(!opening && loopRange && !audio.seeking && !audio.paused && audio.currentTime>=loopRange.end){
@@ -253,28 +261,42 @@
   }
   audio.addEventListener('error',()=>{$('error').textContent='音频加载失败，请检查本地音轨文件。'});
   const drawer=$('mobilePanel');
-  const panels={railTracks:'showTracks',railScene:'showTuning',railTuning:'showTuning'};
+  const share=setupConcertShare();
+  function updateShare(){
+    share.show(tracks[index],config,scoreTime(),poster || audio.ended || opening>0);
+  }
+  const panels={railTracks:'program',railTuning:'tuning',railShare:'sharePanel'};
   let opener=null;
-  for(const [id,tab] of Object.entries(panels)){
+  for(const [id,section] of Object.entries(panels)){
     $(id).setAttribute('aria-controls','mobilePanel');
     $(id).setAttribute('aria-expanded','false');
     $(id).onclick=()=>{
       if(drawer.open && opener===$(id)){drawer.close();return}
       if(opener)opener.setAttribute('aria-expanded','false');
       opener=$(id);opener.setAttribute('aria-expanded','true');
-      $(tab).click();
+      const tracksVisible=section==='program';
+      $('program').hidden=!tracksVisible;
+      $('tuning').hidden=section!=='tuning';
+      const sharing=section==='sharePanel';
+      $('sharePanel').hidden=!sharing;
+      document.querySelector('.keysPane').hidden=sharing;
+      $('creditsButton').hidden=sharing;
+      $('count').hidden=!tracksVisible;
+      $('panelTitle').textContent=opener.textContent.trim();
       if(!drawer.open)drawer.show();
+      if(sharing)updateShare();
       keyState=null;request();
       drawer.scrollTop=0;
-      if(id==='railScene'){
-        const field=document.querySelector('[data-field="backdrop"] input:checked');
-        if(field?.getClientRects().length)field.focus();
-      }else $('closePanel').focus({preventScroll:true});
+      $('closePanel').focus({preventScroll:true});
     };
   }
   $('closePanel').onclick=()=>drawer.close();
-  drawer.addEventListener('close',()=>{if(opener){opener.setAttribute('aria-expanded','false');opener.focus({preventScroll:true});opener=null}});
-  document.addEventListener('pointerdown',e=>{if(drawer.open&&!drawer.contains(e.target)&&!e.target.closest('.hallRail,dialog'))drawer.close()});
+  drawer.addEventListener('close',()=>{if(!drawer.open && opener){opener.setAttribute('aria-expanded','false');opener.focus({preventScroll:true});opener=null}});
+  if(matchMedia('(min-width:701px)').matches){
+    opener=$('railTuning');
+    opener.setAttribute('aria-expanded','true');
+    drawer.open=true;
+  }
   function isFull(){return Boolean(document.fullscreenElement)||$('concert').classList.contains('theater')}
   async function exitShow(){
     if(document.fullscreenElement)await document.exitFullscreen();
@@ -324,5 +346,7 @@
   });
   new ResizeObserver(()=>{stage.resize();keyState=null;request()}).observe($('scene'));
   document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0}else request()});
-  screenState();select(0);
+  const savedId=preference('track');
+  const savedTrack=tracks.findIndex(track=>track.id===savedId);
+  screenState();select(savedTrack>=0?savedTrack:Math.max(0,tracks.findIndex(track=>track.id==='prayer')));
 })();

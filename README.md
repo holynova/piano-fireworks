@@ -1,15 +1,29 @@
-# 花火琴房 · Piano Fireworks
+# 花火琴房
 
-[观演厅 / Live](https://piano-fireworks.xiaosang.cc/) · [GitHub](https://github.com/holynova/piano-fireworks)
+[进入观演厅](https://piano-fireworks.xiaosang.cc/) · [English](README.en.md) · [GitHub](https://github.com/holynova/piano-fireworks)
 
-十首器乐曲，一座可以自己编排的烟花观演厅。爆点跟随谱面起音，右侧可换景、巡镜，或对比两组亮度与节奏设置。导出的 MP4 带曲目信息、项目二维码和网址。
+巴达捷夫斯卡《少女的祈祷》的琴音响起时，岸边升起的烟花刚好绽开。这是一座按乐谱编排的网页观演厅，收录了十首钢琴、吉他、大提琴和马林巴曲目。
 
-![观演厅演出画面](assets/screenshot.png)
+[![《少女的祈祷》演出画面，右侧是曲目单。点击观看有声片段。](assets/screenshot.png)](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)
 
-<img src="assets/qr.png" alt="扫码打开花火琴房" width="136">
+[▶ 看《少女的祈祷》演示 · 22 秒，有声](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)
 
-An interactive concert hall for ten instrumental pieces. Fireworks follow the score, from plucked guitar to solo cello and marimba. Change the scenery or tune the show while listening. Export a 720p MP4 with the original audio, track title and a scannable project link.
+## 试一段乐句
 
-直接打开 `index.html` 可离线播放；重建音轨和编排说明见[曲库来源](music/SOURCES.md)和[播放器手册](docs/player-guide.md)。
+1. 点播放，听默认的《少女的祈祷》。在「曲目」里也能切到德彪西《月光》或吉他版《绿袖子》。
+2. 打开「调校」，循环试听同一段六秒。用 A、B 两组方案比较「每个音符」与「同拍合并」，看和弦绽成几朵烟花。
+3. 从默认的「经典焰色」开始，换花型、调风速或编排巡镜。两组方案、上次选的曲目和静音设置都保存在当前浏览器。
 
-Open `index.html` locally, or run `python3 -m http.server 8080`. To publish from the main branch, install the locked tools with `npm ci`, then run `npm run deploy`.
+全屏可只看演出。右侧「分享」可复制介绍和网址，也能生成二维码卡片。「导出 MP4」会生成带原音轨、曲名和项目二维码的 720p 视频。
+
+## 本地运行
+
+下载仓库并打开 `index.html` 即可离线播放。也可在项目目录启动静态服务，然后访问 `http://localhost:8080`。
+
+```sh
+python3 -m http.server 8080
+```
+
+部署到已配置的 Cloudflare Worker 时运行 `npm ci` 和 `npm run deploy`。[播放器手册](docs/player-guide.md) · [乐谱来源与音轨重建](music/SOURCES.md)
+
+<a href="https://piano-fireworks.xiaosang.cc/"><img src="assets/qr.png" width="112" alt="扫码进入观演厅"></a>

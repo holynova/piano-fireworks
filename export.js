@@ -84,13 +84,12 @@ function concertCard(track,closing,width,height){
   g.fillStyle='#deb784';g.font='27px system-ui';g.fillText('花火琴房',86,138);
   g.fillRect(86,175,52,2);
   g.fillStyle='#f4efe4';g.font='600 58px "Songti SC","Noto Serif CJK SC",serif';
-  g.fillText(closing?'花火落幕':track.title,82,346,745);
+  g.fillText(closing?'演出落幕':track.title,82,346,745);
   g.fillStyle='#c6c8d0';g.font='28px system-ui';
   g.fillText(closing?'扫码，在浏览器里听下一首':[track.composer,track.instrument||'钢琴',track.mark].join('  ·  '),86,417,740);
   if(closing){g.fillStyle='#edd1a7';g.font='25px system-ui';g.fillText(url,86,553,730)}
   // Integer-sized modules and a four-module quiet zone survive H.264 encoding.
   const cell=7,size=(modules.length+8)*cell,x=width-size-86,y=Math.floor((height-size)/2);
-  g.fillStyle='#fff';g.fillRect(x,y,size,size);g.fillStyle='#101318';
-  modules.forEach((row,j)=>{for(let i=0;i<row.length;i++)if(row[i]==='1')g.fillRect(x+(i+4)*cell,y+(j+4)*cell,cell,cell)});
+  ProjectLink.drawQR(g,x,y,cell);
   return canvas;
 }

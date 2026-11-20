@@ -9,7 +9,7 @@
 <script>if(location.protocol==='https:'){const s=document.createElement('script');s.defer=true;s.src='https://cloud.umami.is/script.js';s.dataset.websiteId='e01c9f78-4607-4e60-b01c-77c8190b12b4';document.head.append(s)}</script>
 </head>
 <body class="hall">
-<header class="mast"><div class="brand"><canvas id="brandMark" width="88" height="88" aria-hidden="true"></canvas><h1>花火琴房</h1></div><div class="releaseLinks"><span>v1.0.1</span><a href="https://github.com/holynova/piano-fireworks" target="_blank" rel="noopener">GitHub ↗</a></div></header>
+<header class="mast"><div class="brand"><canvas id="brandMark" width="88" height="88" aria-hidden="true"></canvas><h1>花火琴房</h1></div><div class="releaseLinks"><span>v1.1.0</span><a href="https://github.com/holynova/piano-fireworks" target="_blank" rel="noopener">GitHub ↗</a></div></header>
 <main>
 <div class="concert" id="concert">
 <section class="viewer" aria-label="烟花演出">
@@ -25,53 +25,68 @@
 </section></div>
 <nav class="hallRail panelTools" aria-label="观演厅工具">
 <button id="railTracks" aria-haspopup="dialog"><i data-icon="tracks"></i>曲目</button>
-<button id="railScene" aria-haspopup="dialog"><i data-icon="landscape"></i>场景</button>
 <button id="railTuning" aria-haspopup="dialog"><i data-icon="tune"></i>调校</button>
 <div class="railSpace"></div><button id="mute" aria-label="静音"></button>
 <button id="expand" aria-label="全屏"><i data-icon="full"></i>全屏</button>
+<button id="railShare" aria-haspopup="dialog"><i data-icon="share"></i>分享</button>
 <button id="exportVideo"><i data-icon="download"></i><span>导出 MP4</span></button></nav>
-</main>
-<div class="exportResult"><span id="exportStatus" role="status"></span><a id="downloadVideo" hidden>下载 MP4</a></div>
-<dialog id="mobilePanel" aria-label="演出面板"><aside id="sidePanel">
-<nav class="sideNav" aria-label="演出面板"><button id="showTuning" aria-pressed="true" aria-controls="tuning">调校</button><button id="showTracks" aria-pressed="false" aria-controls="program">曲目 <span id="count"></span></button><button id="closePanel" aria-label="关闭面板">关闭</button></nav>
+<dialog id="mobilePanel" aria-labelledby="panelTitle"><aside id="sidePanel">
+<header class="panelHeading"><h2 id="panelTitle">调校</h2><span id="count" hidden></span><button id="closePanel" aria-label="关闭面板">关闭</button></header>
 <section id="program" aria-label="演出曲目" hidden><div id="tracks"></div></section>
 <section id="tuning" aria-label="演出调校">
 
 <div class="slots"><span>对比方案</span><div class="slotButtons"><button id="slotA" aria-pressed="true">A</button><button id="slotB" aria-pressed="false">B</button></div><button id="resetMix" class="reset">恢复默认</button></div>
 <details class="settingsGroup" open><summary>场景与镜头</summary>
 <label class="tuneRow">背景<select id="backdrop"><option value="score">随曲目</option></select></label>
-<label class="tuneRow">观赏视角<select id="view"><option value="auto">自动巡镜</option><option value="far">远景 · 对岸</option><option value="mid">中景 · 看台</option><option value="near">近景 · 岸边</option><option value="ground">地面仰望</option><option value="drone">无人机航拍</option></select></label>
+<label class="tuneRow">视角<select id="view"><option value="auto">自动巡镜</option><option value="mid">中景 · 看台</option><option value="near">近景 · 岸边</option><option value="ground">地面仰望</option><option value="drone">无人机航拍</option></select></label>
 <label class="tuneRow">镜头运动<select id="camera"><option value="fly">穿梭</option><option value="glide">缓移</option><option value="fixed">固定</option></select></label>
 <div id="tourOptions"><fieldset id="tourViews"><legend>巡镜机位（至少两个）</legend></fieldset>
-<label class="tuneSlider" for="shotTime">每个机位时长<output id="shotTimeValue"></output></label><input class="mixRange" id="shotTime" type="range" min="4" max="20" step="1"></div>
+<label class="tuneSlider" for="shotTime">机位时长<output id="shotTimeValue"></output></label><input class="mixRange" id="shotTime" type="range" min="4" max="20" step="1"></div>
 </details>
 <details class="settingsGroup" open><summary>风与颜色</summary>
-<label class="tuneRow">风吹向<select id="windDirection"><option value="0">右岸</option><option value="45">右岸偏远</option><option value="90">远岸</option><option value="135">左岸偏远</option><option value="180">左岸</option><option value="225">左岸偏近</option><option value="270">观众方向</option><option value="315">右岸偏近</option></select></label>
+<label class="tuneRow">风向<select id="windDirection"><option value="0">右岸</option><option value="45">右岸偏远</option><option value="90">远岸</option><option value="135">左岸偏远</option><option value="180">左岸</option><option value="225">左岸偏近</option><option value="270">观众方向</option><option value="315">右岸偏近</option></select></label>
 <label class="tuneSlider" for="windSpeed">风速<output id="windSpeedValue"></output></label><input class="mixRange" id="windSpeed" type="range" min="0" max="12" step=".5">
-<label class="tuneRow">烟花配色<select id="palette"><option value="gold">柳金</option><option value="classic">经典焰色</option><option value="silver">银白</option><option value="red">绯红</option><option value="green">翠绿</option><option value="ice">深蓝</option><option value="duo">金银双色</option><option value="all">多彩</option></select></label></details>
+<label class="tuneRow">配色<select id="palette"><option value="gold">柳金</option><option value="classic">经典焰色</option><option value="silver">银白</option><option value="red">绯红</option><option value="green">翠绿</option><option value="ice">深蓝</option><option value="duo">金银双色</option><option value="all">多彩</option></select></label></details>
 <label class="tuneRow">触发规则<select id="trigger"><option value="note">每个音符</option><option value="chord">同拍合并</option><option value="accent">只跟重音</option></select></label>
 <p id="coverage"></p>
 <label class="tuneRow">段落编排<select id="staging"><option value="score">随乐句换队形</option><option value="fixed">固定循音散点</option></select></label>
-<div class="sectionCue"><span id="sectionName"></span><button id="nextSection">下一段 ›</button></div><p id="sectionHint"></p>
+<div class="sectionCue"><span id="sectionName"></span><button id="nextSection">下一段 ›</button></div>
 
-<details class="shapePicker"><summary>烟花花型<span id="shapeSummary"></span></summary><div id="shapes"></div></details>
-<label class="tuneSlider" for="brightness">烟花总亮度<output id="brightnessValue" for="brightness"></output></label><input class="mixRange" id="brightness" type="range" min="20" max="100" step="1">
-<label class="tuneSlider" for="overlap">快段避让<output id="overlapValue" for="overlap"></output></label><input class="mixRange" id="overlap" type="range" min="0" max="100" step="5" aria-describedby="overlapHint"><p id="overlapHint">调高会错开爆点、减少同处亮尾迹，让密集花朵更小、余辉更短。</p>
+<details class="shapePicker" open><summary>花型<span id="shapeSummary"></span></summary><div id="shapes"></div></details>
+<label class="tuneSlider" for="brightness">亮度<output id="brightnessValue" for="brightness"></output></label><input class="mixRange" id="brightness" type="range" min="20" max="100" step="1">
+<label class="tuneSlider" for="overlap">快段避让<output id="overlapValue" for="overlap"></output></label><input class="mixRange" id="overlap" type="range" min="0" max="100" step="5" aria-describedby="overlapHint">
 <label class="tuneSlider" for="attack">起音闪光<output id="attackValue" for="attack"></output></label><input class="mixRange" id="attack" type="range" min="0" max="100" step="5">
-<label class="tuneSlider" for="decay">烟花余辉<output id="decayValue" for="decay"></output></label><input class="mixRange" id="decay" type="range" min=".25" max="3" step=".05">
-<label class="tuneSlider" for="offset">爆点校准<output id="offsetValue" for="offset"></output></label><input class="mixRange" id="offset" type="range" min="-200" max="200" step="5">
+<label class="tuneSlider" for="decay">余辉<output id="decayValue" for="decay"></output></label><input class="mixRange" id="decay" type="range" min=".25" max="3" step=".05">
+<label class="tuneSlider" for="offset">音画校准<output id="offsetValue" for="offset"></output></label><input class="mixRange" id="offset" type="range" min="-200" max="200" step="5">
 <div class="mixChecks"><label title="从水面提前升空，在对应琴音响起时绽放"><input type="checkbox" id="launch">升空轨迹</label><label><input type="checkbox" id="finale">终场齐放</label></div>
 <label class="tuneSlider" for="height">爆点高度<output id="heightValue" for="height"></output></label><input class="mixRange" id="height" type="range" min="75" max="120" step="5" aria-describedby="heightHint"><p id="heightHint"></p>
 <label class="tuneRow">曲中齐放<select id="salvos"><option value="off">关闭</option><option value="phrases">精选乐句</option><option value="more">更多乐句</option></select></label>
 <div id="salvoCues" role="group" aria-label="试听曲中齐放"></div>
 <div id="endingOptions"><label class="tuneRow">终场队形<select id="ending"><option value="score">随曲目</option><option value="ring">双层花环</option><option value="fan">扇面齐放</option><option value="arc">弦月</option></select></label>
-<p id="endingDetail"></p><button id="previewEnding">试听终场 ›</button></div>
-<button class="loopButton" id="loop" aria-pressed="false">循环试听此处 6 秒</button>
+<button id="previewEnding">试听终场 ›</button></div>
+<button class="loopButton" id="loop" aria-pressed="false">循环试听 6 秒</button>
+<details id="tuningNotes"><summary>参数说明</summary>
+<dl><dt>快段避让</dt><dd id="overlapHint">调高后，密集爆点更分散，余辉更短。</dd>
+<dt>当前段落</dt><dd id="sectionHint"></dd>
+<dt id="endingNoteLabel">终场队形</dt><dd id="endingDetail"></dd></dl>
+</details>
+</section>
+<section id="sharePanel" aria-label="分享花火琴房" hidden>
+
+<textarea id="shareText" readonly rows="4" aria-label="可复制的演出介绍和网址"></textarea>
+<button class="shareButton" id="copyShareText">复制分享文字</button>
+<span id="copyStatus" role="status"></span>
+
+<img id="sharePreview" alt="演出分享卡片预览" hidden>
+<p id="cardStatus" role="status"></p>
+<div class="shareActions"><a class="shareButton" id="saveShareCard" hidden>下载卡片 PNG</a><button class="shareButton" id="sendShareCard" hidden>系统分享</button></div>
 </section>
 <section class="keysPane" aria-label="演奏音高可视化"><div class="keyTitle"><span>实时音高</span><span id="noteName">—</span></div><canvas id="keys" aria-label="以键盘显示当前演奏音高"></canvas></section>
 <button class="textbutton" id="creditsButton">曲谱来源 <i data-icon="book"></i></button>
 </aside></dialog>
+</main>
+<div class="exportResult"><span id="exportStatus" role="status"></span><a id="downloadVideo" hidden>下载 MP4</a></div>
 <dialog id="credits"><div class="dialogHead"><h2>曲谱来源</h2><button class="iconbutton" id="closeCredits" aria-label="关闭"><i data-icon="close"></i></button></div><p>《少女的祈祷》采用 Michael Bednarek 发布于 Wikimedia Commons 的公有领域 MIDI，其余非原创曲目采用 Mutopia Project 的公有领域乐谱。《绿袖子》以尼龙弦吉他演奏，巴赫组曲前奏曲使用大提琴，《演艺人》改编为马林巴版本。本演出依据 MIDI 谱面渲染各乐器音轨，并以同一份音符时间表编排烟花。</p><div id="sourceLinks"></div><p>《夜空练习曲》为本项目原创钢琴小品。</p></dialog>
 <audio id="audio" preload="auto"></audio>
-<script src="music/tracks.js"></script><script src="choreography.js"></script><script src="landscapes.js"></script><script src="fireworks.js"></script><script src="scene.js"></script><script src="tuning-preview.js"></script><script src="tuning.js"></script><script src="project-link.js"></script><script src="export.js"></script><script src="player.js"></script>
+<script src="music/tracks.js"></script><script src="choreography.js"></script><script src="landscapes.js"></script><script src="fireworks.js"></script><script src="scene.js"></script><script src="tuning-preview.js"></script><script src="tuning.js"></script><script src="project-link.js"></script><script src="share.js"></script><script src="export.js"></script><script src="player.js"></script>
 </body></html>
