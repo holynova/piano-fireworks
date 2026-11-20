@@ -3,7 +3,8 @@
   "account_id": "ef7863c4de93e71c3496f940c8ab4865",
   "compatibility_date": "2026-11-20",
   "workers_dev": false,
-  "assets": {"directory": "./dist"},
+  "main": "audio-range.mjs",
+  "assets": {"directory": "./dist", "binding": "ASSETS", "run_worker_first": ["/music/*"]},
   "routes": [{"pattern": "piano-fireworks.xiaosang.cc", "custom_domain": true}],
   "build": {"command": "npm run build"}
 }
