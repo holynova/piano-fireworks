@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="516" viewBox="0 0 1200 516" role="img" aria-labelledby="title desc">
+<title id="title">花火琴房 · Piano Fireworks</title>
+<desc id="desc">A video still from A Maiden’s Prayer above the actual piano note onsets from 0:36 to 0:54. The vertical marker corresponds to the still at score time 0:50.5.</desc>
+<defs>
+  <linearGradient id="shade"><stop stop-color="#060a12" stop-opacity=".95"/><stop offset=".38" stop-color="#060a12" stop-opacity=".72"/><stop offset=".62" stop-color="#060a12" stop-opacity="0"/></linearGradient>
+  <clipPath id="sky"><rect width="1200" height="342"/></clipPath>
+</defs>
+<rect width="1200" height="516" fill="#101722"/>
+<g clip-path="url(#sky)"><image xlink:href="performance-frame.webp" width="1200" height="675" y="-68"/><rect width="1200" height="342" fill="url(#shade)"/></g>
+<g transform="translate(55,0)">
+  <path d="M0 75h43" stroke="#d5ad73" stroke-width="3"/>
+  <text y="174" fill="#f6ebd7" font-family="Songti SC, STSong, serif" font-size="78" font-weight="bold">花火琴房</text>
+  <text y="219" fill="#efd2a5" font-family="Georgia,serif" font-size="33" font-style="italic">Piano Fireworks</text>
+  <text y="303" fill="#e6e4df" font-family="Songti SC,serif" font-size="23">少女的祈祷<tspan dx="14" font-family="Georgia,serif" font-style="italic">A Maiden’s Prayer</tspan></text>
+</g>
+<path d="M0 342H1200" stroke="#53514d"/>
+<g font-family="Menlo,monospace" font-size="19" fill="#ebcd9e"><text x="55" y="383">00:36</text><text x="1145" y="383" text-anchor="end">00:54</text></g>
+<g stroke="#39414b" stroke-width="1"><path d="M55 405H1145M55 438H1145M55 471H1145"/></g>
+<g fill="none" stroke="#e6bc7b" stroke-width="3.3" stroke-linecap="round">
+<path d="M55.1 416.6h8.3" opacity="0.80"/>
+<path d="M67.7 453.5h7.3" opacity="0.72"/>
+<path d="M67.7 418.5h7.7" opacity="0.75"/>
+<path d="M75.0 446.7h7.3" opacity="0.72"/>
+<path d="M83.4 438.0h7.3" opacity="0.72"/>
+<path d="M164.7 465.1h8.2" opacity="0.79"/>
+<path d="M164.7 453.5h8.2" opacity="0.79"/>
+<path d="M178.3 435.0h8.2" opacity="0.79"/>
+<path d="M190.9 438.0h8.3" opacity="0.80"/>
+<path d="M201.2 435.0h8.4" opacity="0.81"/>
+<path d="M210.2 446.7h7.4" opacity="0.73"/>
+<path d="M210.2 441.8h7.3" opacity="0.72"/>
+<path d="M210.2 438.0h7.4" opacity="0.73"/>
+<path d="M210.2 430.2h8.6" opacity="0.82"/>
+<path d="M217.2 426.3h8.6" opacity="0.83"/>
+<path d="M224.3 423.4h8.6" opacity="0.82"/>
+<path d="M231.3 418.5h8.7" opacity="0.83"/>
+<path d="M236.6 414.7h8.8" opacity="0.84"/>
+<path d="M241.9 411.7h8.8" opacity="0.84"/>
+<path d="M247.2 406.9h8.9" opacity="0.85"/>
+<path d="M252.4 446.7h7.3" opacity="0.72"/>
+<path d="M252.4 441.8h7.4" opacity="0.73"/>
+<path d="M252.4 438.0h7.2" opacity="0.71"/>
+<path d="M252.4 403.0h9.0" opacity="0.86"/>
+<path d="M295.2 446.7h7.2" opacity="0.71"/>
+<path d="M295.2 441.8h7.2" opacity="0.71"/>
+<path d="M295.2 438.0h7.2" opacity="0.71"/>
+<path d="M316.6 404.9h8.8" opacity="0.84"/>
+<path d="M339.3 460.3h8.3" opacity="0.80"/>
+<path d="M339.3 448.6h8.2" opacity="0.79"/>
+<path d="M339.3 406.9h8.4" opacity="0.81"/>
+<path d="M344.0 404.9h8.4" opacity="0.81"/>
+<path d="M348.7 406.9h8.4" opacity="0.81"/>
+<path d="M353.5 404.9h8.2" opacity="0.79"/>
+<path d="M358.2 406.9h8.0" opacity="0.78"/>
+<path d="M362.0 404.9h7.9" opacity="0.77"/>
+<path d="M366.1 406.9h7.8" opacity="0.76"/>
+<path d="M370.3 404.9h7.7" opacity="0.76"/>
+<path d="M375.4 406.9h7.6" opacity="0.75"/>
+<path d="M379.5 404.9h7.7" opacity="0.75"/>
+<path d="M384.1 448.6h7.2" opacity="0.71"/>
+<path d="M384.1 444.8h7.3" opacity="0.72"/>
+<path d="M384.1 439.9h7.3" opacity="0.72"/>
+<path d="M384.1 406.9h7.6" opacity="0.75"/>
+<path d="M387.4 404.9h7.6" opacity="0.74"/>
+<path d="M391.5 406.9h7.6" opacity="0.75"/>
+<path d="M395.7 404.9h7.6" opacity="0.74"/>
+<path d="M399.7 406.9h7.6" opacity="0.74"/>
+<path d="M416.8 407.9h7.5" opacity="0.74"/>
+<path d="M427.6 448.6h7.0" opacity="0.70"/>
+<path d="M427.6 444.8h6.9" opacity="0.69"/>
+<path d="M427.6 439.9h7.2" opacity="0.71"/>
+<path d="M427.6 409.8h7.8" opacity="0.76"/>
+<path d="M470.9 448.6h6.9" opacity="0.69"/>
+<path d="M470.9 444.8h6.9" opacity="0.69"/>
+<path d="M470.9 439.9h6.9" opacity="0.69"/>
+<path d="M516.3 470.0h8.1" opacity="0.79"/>
+<path d="M516.3 458.3h8.2" opacity="0.79"/>
+<path d="M529.6 439.9h8.2" opacity="0.79"/>
+<path d="M541.9 442.8h8.3" opacity="0.80"/>
+<path d="M551.9 439.9h8.4" opacity="0.81"/>
+<path d="M560.7 451.6h7.4" opacity="0.73"/>
+<path d="M560.7 448.6h7.3" opacity="0.72"/>
+<path d="M560.7 446.7h7.4" opacity="0.73"/>
+<path d="M560.7 442.8h7.3" opacity="0.72"/>
+<path d="M560.7 437.0h8.5" opacity="0.82"/>
+<path d="M566.7 435.0h8.5" opacity="0.82"/>
+<path d="M571.6 431.2h8.6" opacity="0.82"/>
+<path d="M576.1 428.2h8.6" opacity="0.82"/>
+<path d="M580.6 425.3h8.6" opacity="0.82"/>
+<path d="M585.1 423.4h8.6" opacity="0.82"/>
+<path d="M589.6 419.5h8.6" opacity="0.83"/>
+<path d="M594.0 416.6h8.6" opacity="0.82"/>
+<path d="M598.5 413.7h8.7" opacity="0.83"/>
+<path d="M603.5 411.7h8.7" opacity="0.83"/>
+<path d="M608.5 451.6h7.4" opacity="0.73"/>
+<path d="M608.5 448.6h7.4" opacity="0.73"/>
+<path d="M608.5 446.7h7.4" opacity="0.73"/>
+<path d="M608.5 442.8h7.3" opacity="0.72"/>
+<path d="M608.5 407.9h8.9" opacity="0.85"/>
+<path d="M651.2 451.6h7.2" opacity="0.71"/>
+<path d="M651.2 448.6h7.2" opacity="0.71"/>
+<path d="M651.2 446.7h7.2" opacity="0.71"/>
+<path d="M651.2 442.8h7.2" opacity="0.71"/>
+<path d="M672.6 409.8h8.5" opacity="0.82"/>
+<path d="M695.3 465.1h8.3" opacity="0.80"/>
+<path d="M695.3 453.5h8.4" opacity="0.81"/>
+<path d="M695.3 411.7h8.2" opacity="0.79"/>
+<path d="M700.0 409.8h8.1" opacity="0.79"/>
+<path d="M704.8 411.7h7.9" opacity="0.77"/>
+<path d="M709.5 409.8h7.8" opacity="0.76"/>
+<path d="M714.2 411.7h7.7" opacity="0.76"/>
+<path d="M718.0 409.8h7.6" opacity="0.74"/>
+<path d="M722.2 411.7h7.5" opacity="0.74"/>
+<path d="M726.3 409.8h7.3" opacity="0.72"/>
+<path d="M731.4 411.7h7.4" opacity="0.73"/>
+<path d="M735.6 409.8h7.4" opacity="0.73"/>
+<path d="M740.2 446.7h7.3" opacity="0.72"/>
+<path d="M740.2 441.8h7.2" opacity="0.71"/>
+<path d="M740.2 438.0h7.2" opacity="0.71"/>
+<path d="M740.2 411.7h7.3" opacity="0.72"/>
+<path d="M743.9 409.8h7.3" opacity="0.72"/>
+<path d="M747.6 411.7h7.3" opacity="0.72"/>
+<path d="M750.8 409.8h7.4" opacity="0.73"/>
+<path d="M754.9 411.7h7.6" opacity="0.74"/>
+<path d="M772.9 413.7h7.7" opacity="0.76"/>
+<path d="M783.7 446.7h7.1" opacity="0.71"/>
+<path d="M783.7 441.8h7.0" opacity="0.70"/>
+<path d="M783.7 438.0h7.1" opacity="0.70"/>
+<path d="M783.7 414.7h7.9" opacity="0.77"/>
+<path d="M826.9 446.7h6.9" opacity="0.69"/>
+<path d="M826.9 441.8h6.9" opacity="0.69"/>
+<path d="M826.9 438.0h6.9" opacity="0.69"/>
+<path d="M872.4 465.1h8.2" opacity="0.79"/>
+<path d="M872.4 453.5h8.3" opacity="0.80"/>
+<path d="M885.6 435.0h8.2" opacity="0.79"/>
+<path d="M897.9 438.0h8.3" opacity="0.80"/>
+<path d="M908.0 435.0h8.4" opacity="0.81"/>
+<path d="M917.1 446.7h7.3" opacity="0.72"/>
+<path d="M917.1 441.8h7.4" opacity="0.73"/>
+<path d="M917.1 438.0h7.4" opacity="0.73"/>
+<path d="M917.1 430.2h8.5" opacity="0.82"/>
+<path d="M924.2 426.3h8.6" opacity="0.83"/>
+<path d="M931.3 423.4h8.6" opacity="0.83"/>
+<path d="M938.4 418.5h8.7" opacity="0.83"/>
+<path d="M943.8 414.7h8.5" opacity="0.82"/>
+<path d="M949.1 411.7h8.7" opacity="0.83"/>
+<path d="M954.5 406.9h8.7" opacity="0.83"/>
+<path d="M959.8 446.7h7.6" opacity="0.74"/>
+<path d="M959.8 441.8h7.5" opacity="0.74"/>
+<path d="M959.8 438.0h7.5" opacity="0.74"/>
+<path d="M959.8 403.0h9.0" opacity="0.86"/>
+<path d="M1003.6 446.7h7.6" opacity="0.75"/>
+<path d="M1003.6 441.8h7.6" opacity="0.74"/>
+<path d="M1003.6 438.0h7.6" opacity="0.75"/>
+<path d="M1025.5 404.9h8.7" opacity="0.83"/>
+<path d="M1048.2 460.3h8.3" opacity="0.80"/>
+<path d="M1048.2 448.6h8.4" opacity="0.81"/>
+<path d="M1048.2 406.9h8.4" opacity="0.81"/>
+<path d="M1052.9 404.9h8.1" opacity="0.79"/>
+<path d="M1057.6 406.9h8.0" opacity="0.78"/>
+<path d="M1062.4 404.9h7.9" opacity="0.77"/>
+<path d="M1067.1 406.9h7.8" opacity="0.76"/>
+<path d="M1070.9 404.9h7.8" opacity="0.76"/>
+<path d="M1075.0 406.9h7.6" opacity="0.75"/>
+<path d="M1079.2 404.9h7.5" opacity="0.74"/>
+<path d="M1084.3 406.9h7.6" opacity="0.74"/>
+<path d="M1088.4 404.9h7.6" opacity="0.75"/>
+<path d="M1093.0 448.6h7.3" opacity="0.72"/>
+<path d="M1093.0 444.8h7.2" opacity="0.71"/>
+<path d="M1093.0 439.9h7.3" opacity="0.72"/>
+<path d="M1093.0 406.9h7.5" opacity="0.74"/>
+<path d="M1096.7 404.9h7.5" opacity="0.74"/>
+<path d="M1100.4 406.9h7.5" opacity="0.74"/>
+<path d="M1103.7 404.9h7.4" opacity="0.73"/>
+<path d="M1107.7 406.9h7.6" opacity="0.75"/>
+<path d="M1125.7 407.9h7.9" opacity="0.77"/>
+<path d="M1136.6 448.6h7.1" opacity="0.71"/>
+<path d="M1136.6 444.8h7.1" opacity="0.71"/>
+<path d="M1136.6 439.9h7.2" opacity="0.71"/>
+<path d="M1136.6 409.8h8.0" opacity="0.78"/>
+</g>
+<path d="M933 392v90" stroke="#f2e6d3" stroke-width="2"/><path d="m928 389 5 7 5-7" fill="#f2e6d3"/>
+</svg>

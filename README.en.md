@@ -1,29 +1,45 @@
 # Piano Fireworks
 
-[Open the concert hall](https://piano-fireworks.xiaosang.cc/) · [简体中文](README.md) · [GitHub](https://github.com/holynova/piano-fireworks)
+Ten instrumental pieces, each with its own fireworks display. Start with *A Maiden’s Prayer* and watch a shell lift from the riverbank in time to open on a piano note.
 
-In Bądarzewska’s *A Maiden’s Prayer*, a shell lifts from the riverbank before a piano note and opens as the key sounds. This browser concert hall choreographs fireworks from the score of each of its ten piano, guitar, cello and marimba performances.
+**[Enter the concert hall](https://piano-fireworks.xiaosang.cc/)**　·　[Watch the 22-second excerpt with sound](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)　·　[简体中文](README.md)
 
-[![A burst over the water during A Maiden’s Prayer, with the track list on the right. Click to watch the excerpt.](assets/screenshot.png)](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)
+[![A frame from A Maiden’s Prayer. Gold marks plot the piano notes from 0:36 to 0:54. The white line marks the instant shown. Select to play.](assets/readme/concert-programme.webp)](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)
 
-[▶ Watch *A Maiden’s Prayer* · 22 seconds with sound](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)
+## Hear the same chord two ways
 
-## Try one phrase
+Open the tuning panel (调校) and loop six seconds (循环试听 6 秒). Set preset A to one burst per note (每个音符) and B to group simultaneous notes (同拍合并). Switch between them as the phrase repeats. A chord that fills the sky with several shells now lands as a single burst.
 
-1. Press play to hear *A Maiden’s Prayer*. Open the track list (曲目) for Debussy’s *Clair de lune* or *Greensleeves* on nylon-string guitar.
-2. Open the tuning panel (调校) and loop six seconds. Use presets A and B to compare a burst for each note with one for an entire chord.
-3. Start with the classic firework colors, then change the shells, wind or camera positions. Your browser remembers both presets, the selected preset, the last piece and your mute setting.
+The hall opens in classic firework colors. Choose peony or willow shells, turn up the wind to see the trails drift, or watch from ground level. Your browser remembers both presets, which one was active, your last piece and your mute setting.
 
-Go fullscreen for the performance alone. The share panel (分享) offers a short introduction with a link or a QR card. MP4 export produces a 720p film with the original audio, track title and project QR code.
+## Take a seat for another piece
 
-## Run locally
+| Piece | Instrument | What to watch for |
+| --- | --- | --- |
+| Bądarzewska, *A Maiden’s Prayer* | Piano | The opening fan widens through the phrase |
+| Debussy, *Clair de lune* | Piano | Trails linger in the space between phrases |
+| *Greensleeves* | Nylon-string guitar | In the call-and-response section, low and high notes light opposite banks |
+| Joplin, *The Entertainer* | Marimba | The bursts trace the offbeat accents of the rag |
 
-Download the repository and open `index.html` to listen offline. To serve it locally, run the following command from the project directory and visit `http://localhost:8080`.
+<details>
+<summary>See the player and all ten pieces</summary>
+
+![The concert hall with the performance and transport on the left and the track list on the right.](assets/screenshot.png)
+
+[Score credits and recording notes for all ten pieces (Chinese)](music/SOURCES.md)
+
+</details>
+
+Go fullscreen to watch the performance. Use 分享 to copy an invitation or save a QR card. 导出 MP4 saves the full concert as a 720p video with its soundtrack, opening title and closing card.
+
+## Listen offline
+
+Download the [source repository](https://github.com/holynova/piano-fireworks) and open `index.html`. To use a local server, run the command below from the project directory, then visit `http://localhost:8080`.
 
 ```sh
 python3 -m http.server 8080
 ```
 
-To deploy to the configured Cloudflare Worker, run `npm ci` and `npm run deploy`. [Player guide (Chinese)](docs/player-guide.md) · [Score credits and audio build notes (Chinese)](music/SOURCES.md)
+[Player guide (Chinese)](docs/player-guide.md) · [Rebuild the recordings (Chinese)](music/SOURCES.md#重建) · To deploy to the configured Cloudflare Worker, run `npm ci` followed by `npm run deploy`.
 
-<a href="https://piano-fireworks.xiaosang.cc/"><img src="assets/qr.png" width="112" alt="Scan to open the concert hall"></a>
+<a href="https://piano-fireworks.xiaosang.cc/"><img src="assets/qr.png" alt="Scan to open the concert hall on your phone" width="108"></a>
