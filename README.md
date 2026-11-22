@@ -45,6 +45,6 @@
 python3 -m http.server 8080
 ```
 
-[播放器手册](docs/player-guide.md) · [重建曲库](music/SOURCES.md#重建) · 部署到已配置的 Cloudflare Worker 可运行 `npm ci` 和 `npm run deploy`。
+[播放器手册](docs/player-guide.md) · [重建曲库](music/SOURCES.md#重建) · 推送到 `main` 后 Cloudflare Workers Builds 会部署本站。要在本机发布同一提交，可运行 `npm ci` 和 `npm run deploy`。
 
 <a href="https://piano-fireworks.xiaosang.cc/"><img src="assets/qr.png" alt="扫码在手机上打开花火琴房" width="108"></a>

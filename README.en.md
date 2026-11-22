@@ -46,6 +46,6 @@ Download the [source repository](https://github.com/holynova/piano-fireworks) an
 python3 -m http.server 8080
 ```
 
-[Player guide (Chinese)](docs/player-guide.md) · [Rebuild the recordings (Chinese)](music/SOURCES.md#重建) · To deploy to the configured Cloudflare Worker, run `npm ci` followed by `npm run deploy`.
+[Player guide (Chinese)](docs/player-guide.md) · [Rebuild the recordings (Chinese)](music/SOURCES.md#重建) · Push to `main` to deploy through Cloudflare Workers Builds. To publish the same commit locally, run `npm ci` followed by `npm run deploy`.
 
 <a href="https://piano-fireworks.xiaosang.cc/"><img src="assets/qr.png" alt="Scan to open the concert hall on your phone" width="108"></a>
