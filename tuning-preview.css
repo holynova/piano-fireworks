@@ -28,7 +28,8 @@
 .adjustGroup{border-top:1px solid var(--line)}
 .adjustGroup summary{cursor:pointer;font-weight:550;padding:9px 0;min-height:38px;color:var(--ink)}
 .adjustGroup summary::marker{color:var(--quiet)}
-.adjustGroup[open]{padding-bottom:7px}.allGroups{margin-top:6px}
+.adjustGroup[open]{padding-bottom:7px}
+.panelContent>.adjustGroup:first-child{border-top:0}
 .windPad{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:240px}
 .windPad .arrow,.windCenter{color:var(--gold)}.windCenter{margin:auto;font-size:12px}
 .checkField{min-height:34px;gap:7px}.checkField input{accent-color:var(--gold)}
@@ -59,7 +60,6 @@
 .hall main:has(#mobilePanel[open]) .deck{width:min(430px,calc(100% - 28px))}
 .hall .details{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 7px}
 .hall .details h2{order:-2;font-size:18px}.hall .details #artist{order:-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;margin:0;font-size:11px}
-.hall .details #tempo{font-size:10px;letter-spacing:0}
 .hall .controls{gap:0}
 .hall .controls button{width:34px;height:34px}.hall .controls svg{width:16px;height:16px}
 .hall .play{background:#eac38e29;color:#f9dfb2}.hall .play:hover{background:#eac38e47;color:#fff0d6}

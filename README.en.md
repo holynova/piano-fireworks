@@ -1,10 +1,12 @@
 # Piano Fireworks
 
-Thirty instrumental pieces, each with its own fireworks display. Start with *A Maiden’s Prayer* and watch a shell lift from the riverbank in time to open on a piano note.
+Fifty-five instrumental pieces, each with its own fireworks display. Start with *A Maiden’s Prayer* and watch a shell lift from the riverbank in time to open on a piano note.
 
 **[Enter the concert hall](https://piano-fireworks.xiaosang.cc/)**　·　[Watch the 22-second excerpt with sound](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)　·　[简体中文](README.md)
 
 [![A frame from A Maiden’s Prayer. Gold marks plot the piano notes from 0:36 to 0:54. The white line marks the instant shown. Select to play.](assets/readme/concert-programme.webp)](https://piano-fireworks.xiaosang.cc/media/maidens-prayer.mp4)
+
+Try *Senbonzakura on Ice* for a different kind of score. Each detected onset in the ice performance launches a shell. Choose a close-up camera or scatter the launch positions across the frame.
 
 ## Hear the same chord two ways
 
@@ -23,12 +25,14 @@ The hall opens in classic firework colors. Choose peony or willow shells, turn u
 | *Greensleeves* | Nylon-string guitar | In the call-and-response section, low and high notes light opposite banks |
 | Joplin, *The Entertainer* | Marimba | The bursts trace the offbeat accents of the rag |
 
+The ten Chinese selections include a flute and đàn tranh arrangement of the Yangzhou *Jasmine Flower* and a chamber round on *Defend the Yellow River* from Xian Xinghai’s cantata.
+
 <details>
-<summary>See the player and all thirty pieces</summary>
+<summary>See the player and all fifty-five pieces</summary>
 
 ![The concert hall with the performance and transport on the left and the track list on the right.](assets/screenshot.png)
 
-[Score credits and recording notes for all thirty pieces (Chinese)](music/SOURCES.md)
+[Score credits and recording notes for all fifty-five pieces (Chinese)](music/SOURCES.md)
 
 </details>
 

@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["mido==1.3.3"]
+# dependencies = ["mido==1.3.3", "numpy>=1.26,<3"]
 # ///
 """Rebuild the audio tracks and browser cue sheet on macOS: uv run music/build.py."""
 from bisect import bisect_right
@@ -21,6 +21,9 @@ SOURCE = HERE.parent / "src"
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(SOURCE))
 from score import arrangement, DURATION
+import folk
+import ice
+import snare
 
 # Quarter-note intervals in the official source MIDI. LilyPond's preview writes
 # successive alternatives once; these itineraries play the printed repeats.
@@ -35,6 +38,13 @@ TURCA = [
 ]
 # These editions use their own MIDI tempo maps, including changes within a movement.
 CLASSIC_PIANO = [
+    ('traumerei', '梦幻曲', '舒曼', '童年情景 · Op. 15 第 7 首', 60, 'slow', 504, None),
+    ('ave_maria', '圣母颂', '巴赫／古诺', '据 BWV 846 改编 · 钢琴版', 66, 'lyric', 2167, None),
+    ('bumblebee', '野蜂飞舞', '里姆斯基－科萨科夫', '钢琴版', 144, 'fast', 'https://musicnotesdir.com/piece/domain-flight-of-the-bumblebee/', None),
+    ('revolutionary', '革命练习曲', '肖邦', 'Op. 10 第 12 首', 160, 'fast', 743, None),
+    ('piano_canon', 'D 大调卡农', '帕赫贝尔', '钢琴版', 100, 'lyric', 'https://musicnotesdir.com/piece/domain-canon-in-d/', None),
+    ('liebestraum', '爱之梦 · 第三首', '李斯特', 'S. 541 第 3 首', 152, 'lyric', 'https://musicnotesdir.com/piece/domain-liebestraum-no-3-in-a-major/', None),
+    ('hungarian_five', '匈牙利舞曲 · 第五号', '勃拉姆斯', 'G 小调钢琴版', 130, 'fast', 'https://musicnotesdir.com/piece/domain-hungarian-dance-no-5-in-g-minor/', None),
     ('moonlight', '月光奏鸣曲 · 第一乐章', '贝多芬', 'Op. 27 No. 2', 60, 'slow', 276, None),
     ('nocturne', '降 E 大调夜曲', '肖邦', 'Op. 9 No. 2', 66, 'lyric', 1590, None),
     ('facile', 'C 大调奏鸣曲 · 第一乐章', '莫扎特', 'K. 545', 132, 'fast', 998, None),
@@ -48,6 +58,8 @@ CLASSIC_PIANO = [
     ('debussy_arabesque', '第一号阿拉伯风格曲', '德彪西', 'L. 66 No. 1', 144, 'lyric', 1777, None),
     ('raindrop', '雨滴前奏曲', '肖邦', 'Op. 28 No. 15', 80, 'slow', 471, None),
     ('mountain_king', '山魔王的宫殿', '格里格', 'Op. 46 No. 4 · 钢琴版', 138, 'fast', 1888, None),
+    ('campanella', '钟', '李斯特', '帕格尼尼大练习曲 · S.141 第 3 首', 97, 'fast',
+     'https://musicnotesdir.com/piece/liszt-la-campanella-grandes-etudes-de-paganini-no-3-franz-liszt/', None),
     ('consolation', '第三号安慰曲', '李斯特', 'S. 172 No. 3', 60, 'slow', 1647, None),
     ('gondola', '威尼斯船歌', '门德尔松', 'Op. 30 No. 6', 60, 'lyric', 1741, None),
     ('bells', '升 C 小调前奏曲', '拉赫玛尼诺夫', 'Op. 3 No. 2', 60, 'lyric', 2033, None),
@@ -72,7 +84,28 @@ PIECES = [
     ('greensleeves', '绿袖子', '英格兰民谣', '民谣', 108, 'lyric', 109, None),
     ('cello', '第一大提琴组曲 · 前奏曲', '巴赫', '巴洛克', 80, 'lyric', 517, None),
     ('entertainer', '演艺人', '斯科特·乔普林', '拉格泰姆', 84, 'fast', 263, None),
+    ('ice_elise', '致爱丽丝 · 冰上主题', '贝多芬', '冰面滑奏 · 主题节选', 70, 'lyric',
+     'https://www.bilibili.com/video/BV1FV411b7Qf/', None),
     *CLASSIC_PIANO,
+    ('jasmine', '茉莉花', '江苏民歌', '扬州小调', 80, 'lyric', 'https://lib.midicn.com/detail.html?play=essen-000463', None),
+    ('flower_drum', '凤阳花鼓', '安徽民歌', '花鼓小调', 112, 'fast', 'https://lib.midicn.com/detail.html?play=essen-000454', None),
+    ('kangding', '康定情歌', '四川民歌', '山歌', 88, 'lyric', 'https://lib.midicn.com/detail.html?play=essen-000496', None),
+    ('purple_bamboo', '紫竹调', '江苏民歌', '苏州小调', 96, 'lyric', 'https://lib.midicn.com/detail.html?play=essen-000460', None),
+    ('boatmen', '黄河船夫号子', '宁夏民歌', '劳动号子', 84, 'lyric', 'https://lib.midicn.com/detail.html?play=essen-000818', None),
+    ('pouch', '绣荷包', '山西民歌', '山西小调', 76, 'slow', 'https://lib.midicn.com/detail.html?play=essen-008897', None),
+    ('tea_lantern', '采茶灯', '福建民歌', '龙岩民歌', 116, 'fast', 'https://lib.midicn.com/detail.html?play=essen-000065', None),
+    ('wuxi', '无锡景', '江苏民歌', '江南小调', 78, 'lyric', 'https://lib.midicn.com/detail.html?play=essen-000461', None),
+    ('mengjiang', '孟姜女哭长城', '河北民歌', '河北小调', 66, 'slow', 'https://lib.midicn.com/detail.html?play=essen-000162', None),
+    ('defend_river', '保卫黄河 · 主题轮奏', '冼星海', '《黄河大合唱》选段', 128, 'fast', 'https://commons.wikimedia.org/wiki/File:NLC416-14jh000644-70576_%E9%BB%83%E6%B2%B3.pdf', None),
+    ('snare_march', '列队', '花火琴房', '小军鼓进行曲', 112, 'fast', None, None),
+    ('snare_offbeat', '错步', '花火琴房', '切分小品', 100, 'fast', None, None),
+    ('snare_tide', '潮汐滚奏', '花火琴房', '渐强与渐弱', 84, 'slow', None, None),
+    ('senbonzakura', '千本樱 · 冰上演奏', '黒うさP', '十五的月亮廿九圆 · 实演节选', 144, 'fast',
+     'https://www.bilibili.com/video/BV1FV411b7Qf/', None),
+    ('ievan_polkka', '甩葱歌', '芬兰传统民歌', '伊娃的波尔卡', 126, 'fast',
+     'https://thesession.org/tunes/418#setting418', None),
+    ('korobeiniki', '货郎 · 俄罗斯方块主题曲', '俄罗斯传统民歌', 'Korobeiniki', 148, 'fast',
+     'https://thesession.org/tunes/13747#setting24502', None),
 ]
 
 
@@ -81,6 +114,8 @@ INSTRUMENTS = {
     'greensleeves': (24, '尼龙弦吉他'),
     'cello': (42, '大提琴'),
     'entertainer': (12, '马林巴'),
+    'ievan_polkka': (21, '手风琴'),
+    'korobeiniki': (80, '方波合成器'),
 }
 
 
@@ -262,25 +297,48 @@ def build(only=()):
                 tracks.append(existing[id_])
                 continue
             beat_map = None
-            if ref and itinerary is None:
-                notes,duration,beat_map = continuous_performance(id_,tempo)
-            elif ref:
-                notes, duration = perform(id_, tempo, itinerary)
-            else:
-                notes, duration = arrangement()[0], DURATION
-            notes = arrange_voices(notes)
-            score, wav = temp/'part.json', temp/'performance.caf'
-            score.write_text(json.dumps(notes))
-            wav.unlink(missing_ok=True)
-            program, instrument = INSTRUMENTS.get(id_, (0, '钢琴'))
-            subprocess.run([str(renderer),str(score),str(wav),str(duration),str(program)],check=True)
             audio = HERE/f'{id_}.m4a'
-            encode(wav,audio,duration)
+            if id_ == 'senbonzakura':
+                notes, duration = ice.score_recording(audio)
+                instrument = '冰块'
+                wav = None
+            elif id_ in snare.SCORES:
+                wav = temp/'snare.wav'
+                notes, duration = snare.render(id_, tempo, wav)
+                instrument = '小军鼓'
+            elif id_ == 'ice_elise':
+                raw, _ = read_score(HERE/'scores'/'elise.mid')
+                wav = temp/'ice.wav'
+                notes, duration, beat_map = ice.render(raw, tempo, wav)
+                instrument = '冰块'
+            elif id_ in folk.PARTS:
+                raw, _ = read_score(HERE/'scores'/f'{id_}.mid')
+                notes, duration, beat_map, instrument = folk.perform(id_,raw,tempo)
+                wav = temp/'ensemble.wav'
+                folk.render(notes,duration,wav)
+            else:
+                if ref and itinerary is None:
+                    notes,duration,beat_map = continuous_performance(id_,tempo)
+                elif ref:
+                    notes, duration = perform(id_, tempo, itinerary)
+                else:
+                    notes, duration = arrangement()[0], DURATION
+                notes = arrange_voices(notes)
+                score, wav = temp/'part.json', temp/'performance.caf'
+                score.write_text(json.dumps(notes))
+                wav.unlink(missing_ok=True)
+                program, instrument = INSTRUMENTS.get(id_, (0, '钢琴'))
+                subprocess.run([str(renderer),str(score),str(wav),str(duration),str(program)],check=True)
+            if wav is not None:
+                encode(wav,audio,duration)
             pack_export_audio(audio)
             tracks.append(dict(id=id_,title=title,composer=composer,mark=mark,tempo=tempo,
                     mode=mode,instrument=instrument,duration=duration,src=f'music/{id_}.m4a',
                     source=(ref if isinstance(ref,str) else f'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id={ref}') if ref else '',
                     notes=[[round(n['start'],5), n['pitch'], n['velocity']] for n in notes]))
+            if id_ in snare.SCORES:
+                for event, note in zip(tracks[-1]['notes'], notes):
+                    event.append(note['stroke'])
             if beat_map:
                 tracks[-1]['beatMap'] = beat_map
             print(f'{title}: {duration:.3f} seconds, {len(notes)} note-on events',flush=True)

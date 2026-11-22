@@ -16,19 +16,20 @@
     b.type='button';b.onclick=fn;return b;
   }
   const groups=[
-    ['夜空与机位',['backdrop','view','camera']],
-    ['风与升空',['windDirection','windSpeed','launch','height']],
-    ['烟花外观',['palette','brightness','shapes','overlap','attack','decay']],
-    ['音画同步',['trigger','offset']],
-    ['乐句与齐放',['staging','salvos','finale']]
+    ['常用',['look','backdrop','palette','brightness','trigger','overlap']],
+    ['镜头',['view','camera']],
+    ['乐句与齐放',['staging','salvos','finale']],
+    ['花型与轨迹',['shapes','launch','height','decay']],
+    ['音画微调',['attack','offset']],
+    ['风场',['windDirection','windSpeed']]
   ];
   const tasks=[
-    ['看清快段',['overlap','brightness','decay','shapes','palette']],
+    ['看清快段',['look','overlap','brightness','decay','shapes','palette']],
     ['听准爆点',['trigger','offset','attack']],
-    ['换个视角',['backdrop','view','camera','launch','height','windDirection','windSpeed']],
-    ['安排齐放',['staging','salvos','finale']]
+    ['换个视角',['backdrop','view','camera']],
+    ['安排齐放',['staging','salvos','finale']],
+    ['调整升空与风场',['launch','height','windDirection','windSpeed']]
   ];
-  const presets=['brightness','backdrop','palette','shapes'];
   const colors={gold:'#dfab63',classic:'linear-gradient(90deg,#ddad66 40%,#b94b43 40% 60%,#75a07c 60% 80%,#c8cbd2 80%)',silver:'#c8cbd2',red:'#c35d56',green:'#80ae85',ice:'#6085c0',duo:'linear-gradient(90deg,#dfab63 50%,#c8cbd2 50%)',all:'linear-gradient(90deg,#c7675e,#c5ab67,#85b3ad,#8c7bac)'};
   const directionOrder=['135','90','45','180','center','0','225','270','315'];
   const shortWind={'135':'左远','90':'远岸','45':'右远','180':'左岸','0':'右岸','225':'左近','270':'近岸','315':'右近'};
@@ -54,7 +55,7 @@
       const options=[...select.options];
       const order=id==='windDirection'?directionOrder:options.map(o=>o.value);
       for(const value of order){
-        if(value==='center'){row.append(el('span','windCenter','风'));continue}
+        if(value==='center'){row.append(el('span','windCenter'));continue}
         const opt=options.find(o=>o.value===value);
         const chip=el('label','optionChip'),radio=el('input');
         radio.type='radio';radio.name='preview-'+id;radio.value=value;
@@ -79,9 +80,7 @@
     // These fields may already live in detached containers after the first pass.
     field.view.append($('tourOptions'));
     $('tourOptions').append(field.shotTime);
-    field.trigger.append($('coverage'));
     field.staging.append(root.querySelector('.sectionCue'));
-    field.height.append($('heightHint'));
     field.salvos.append($('salvoCues'));
     for(const id of ['launch','finale']){
       const label=$(id).closest('label');label.classList.add('checkField');
@@ -104,16 +103,14 @@
       d.open=true;d.append(summary);place(d,ids);return d;
     }
     function showQuick(){
-      place(work,presets);
-      const details=el('div','allGroups');
-      for(const [name,ids] of groups)details.append(group(name,ids.filter(id=>!presets.includes(id))));
-      work.append(details,tools);
+      for(const [name,ids] of groups)work.append(group(name,ids));
+      work.append(tools);
     }
     function showGuide(){
       for(const [name,ids] of tasks)work.append(group(name,ids));
       work.append(tools);
     }
-    const compareIds=['brightness','overlap','offset','windSpeed','decay','height','attack'];
+    const compareIds=['brightness','overlap','decay','height','attack','offset','windSpeed'];
     const suffix={brightness:'%',overlap:'%',offset:' ms',windSpeed:' m/s',decay:' 秒',height:'%',attack:'%'};
     const cells=[];
     function showCompare(){

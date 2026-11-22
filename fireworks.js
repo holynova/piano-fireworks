@@ -19,8 +19,8 @@ window.Fireworks = (() => {
   ];
   const themes={gold:[0],silver:[8],red:[1],green:[2],ice:[4],duo:[0,8],
     classic:[0,1,0,2,8],all:[0,1,2,3,4,5,6,7]};
-  const tourViews=['mid','near','ground','drone'];
-  const defaults={theme:'fireworks',trigger:'chord',shapes:['peony','chrys','willow','palm','crown','strobe','horsetail','dahlia'],palette:'classic',offset:0,
+  const tourViews=['mid','near','closeup','ground','drone'];
+  const defaults={look:'live',theme:'fireworks',trigger:'chord',shapes:['peony','chrys','willow','palm','crown','strobe','horsetail','dahlia'],palette:'classic',offset:0,
     brightness:90,overlap:75,height:100,decay:1.25,attack:75,salvos:'phrases',finale:true,launch:true,camera:'fly',view:'auto',tourViews:['near','ground','drone'],shotTime:8,windSpeed:4,windDirection:0,backdrop:'city',staging:'score',ending:'score'};
   function normalize(input={}) {
     const shapes=Array.isArray(input.shapes)?Object.keys(kinds).filter(k=>input.shapes.includes(k)):[];
@@ -32,10 +32,10 @@ window.Fireworks = (() => {
     }
     const view=input.view==='far'?'mid':input.view;
     return {
-      theme:defaults.theme,
+      look:input.look==='classic'?'classic':defaults.look,theme:defaults.theme,
       tourViews:selected.length>=2?selected:[...defaults.tourViews],shotTime:limit('shotTime',4,20),
       windSpeed:limit('windSpeed',0,12),windDirection:[0,45,90,135,180,225,270,315].includes(input.windDirection)?input.windDirection:0,
-      staging:input.staging==='fixed'?'fixed':'score',
+      staging:['fixed','scatter'].includes(input.staging)?input.staging:'score',
       ending:['score','ring','fan','arc'].includes(input.ending)?input.ending:defaults.ending,
       shapes:shapes.length?shapes:[...defaults.shapes],
       trigger:['note','chord','accent'].includes(input.trigger)?input.trigger:defaults.trigger,
@@ -108,10 +108,14 @@ window.Fireworks = (() => {
       return {...s,kind:config.shapes[i%config.shapes.length],color};
     };
   }
-  function planSpacing(list) {
+  function scatterPosition(rand,pitch){
+    return [(rand()-.5)*18,10.5+2.7*Math.tanh((pitch-63)/20)+(rand()-.5)*4,bankZ+(rand()-.5)*5];
+  }
+  function planSpacing(list,live) {
     // Work in score order so a seek or dropped frame cannot change a note's position.
     // Compare only nearby attacks and give slightly more space to a simultaneous chord.
     const offsets=[[0,0],[-1,0],[1,0],[0,.9],[0,-.9],[-.8,.7],[.8,-.7],[.8,.7],[-.8,-.7]];
+    if(live)offsets.push([-1.7,0],[1.7,0],[0,1.5],[0,-1.5]);
     let first=0;
     for(let i=0;i<list.length;i++){
       const s=list[i];
@@ -126,6 +130,10 @@ window.Fireworks = (() => {
           const depth=(s.z-prev.z)*.20;
           const radius=.72*(s.size+prev.size);
           const distance=(x*x+y*y+depth*depth)/(radius*radius);
+          if(live && age<.28){
+            const centerGap=x*x+y*y;
+            cost+=4*Math.max(0,1-centerGap/2.25)*(1-age/.28);
+          }
           if(distance<1)cost+=(1-distance)**2*(1-age/.85);
         }
         if(ox===0 && oy===0)s.crowd=cost/(1+cost);
@@ -134,8 +142,34 @@ window.Fireworks = (() => {
       s.clearX=dx;s.clearY=dy;
     }
   }
+  function assignAccents(list,track,parts,threshold){
+    let lastMain=-Infinity,phrase=0;
+    for(let i=0;i<list.length;){
+      const t=list[i].t;
+      let end=i+1,voice=list[i];
+      while(end<list.length&&list[end].t===t){
+        if(list[end].velocity>=voice.velocity)voice=list[end];
+        end++;
+      }
+      const newPhrase=phrase+1<parts.length && t>=parts[phrase+1].start;
+      while(phrase+1<parts.length && t>=parts[phrase+1].start)phrase++;
+      const gap=t-lastMain;
+      const accented=voice.velocity>=threshold||end-i>=3;
+      const beat=Choreography.beatAt(track,t);
+      const strongBeat=Math.abs(beat-2*Math.round(beat/2))<.045&&voice.velocity>=threshold-10;
+      const isMain=newPhrase||gap>=1.55||(gap>=.48&&accented)||(gap>=.32&&strongBeat);
+      if(isMain)lastMain=t;
+      for(let j=i;j<end;j++){
+        if(isMain&&list[j]===voice)continue;
+        list[j].compact=true;
+        list[j].size*=.75;
+      }
+      i=end;
+    }
+  }
   function build(track,config=defaults) {
     const styleCue=cueStylist(config,Math.round(track.duration*1000)+track.notes.length);
+    const placement=random(Math.round(track.duration*1000)^0x58e14b);
     const groups=[];
     for(const note of track.notes){
       const [t,p,v]=note;
@@ -153,31 +187,51 @@ window.Fireworks = (() => {
     const parts=Choreography.sections(track,config.staging);
     const ending=Choreography.endingFor(track,config.ending);
     let lastAccent=-Infinity,serial=0;
-    function add(t,pitch,velocity,rank,count){
+    function add(t,pitch,velocity,rank,count,stroke){
       const spread=count>1?(rank/(count-1)-.5)*3:0;
       const section=parts[Choreography.sectionAt(parts,t)];
       const beat=Choreography.beatAt(track,t)-Choreography.beatAt(track,section.start);
-      const [x,y,z]=Choreography.position(section.form,t,beat,pitch,spread);
+      // A snare has a single MIDI key. Let the rhythm travel across the stage.
+      const lane=stroke?63+22*Math.sin(beat*Math.PI/4):pitch;
+      const [x,y,z]=section.form==='scatter'?scatterPosition(placement,lane):Choreography.position(section.form,t,beat,lane,spread);
       const scale=config.trigger==='note'?1:1.32;
       const size=(1.12+3.35*(velocity/110)**2)*scale/(1+.10*(count-1));
       const s=cue(t,x,y,z,size,'peony',0,7919+serial*29);
-      s.velocity=velocity;
+      s.velocity=velocity;s.pitch=pitch;
       s.noteBurst=true;
-      list.push(styleCue(s,serial++));
+      const burst=styleCue(s,serial++);
+      if(stroke){
+        burst.stroke=stroke;
+        if(stroke==='accent'){
+          burst.y+=2;burst.size*=1.18;
+        }else if(stroke==='roll' || stroke==='ghost'){
+          burst.compact=true;
+          burst.size*=stroke==='roll'?.52:.36;
+          burst.y-=stroke==='roll'?1.6:3;
+          const previous=list.at(-1);
+          if(stroke==='roll' && previous?.stroke==='roll' && t-previous.t<.4){
+            burst.kind=previous.kind;burst.color=previous.color;
+          }
+        }
+      }
+      list.push(burst);
     }
     for(const g of groups){
       if(config.trigger==='note'){
         const chord=g.notes.slice().sort((a,b)=>a[1]-b[1]);
-        chord.forEach(([,p,v],rank)=>add(g.t,p,v,rank,chord.length));
+        chord.forEach(([,p,v,stroke],rank)=>add(g.t,p,v,rank,chord.length,stroke));
       }else{
-        if(config.trigger==='accent'){
+        const stroke=g.notes[0][3];
+        if(config.trigger==='accent' && stroke && stroke!=='accent')continue;
+        if(config.trigger==='accent' && !stroke){
           if((g.velocity<threshold && g.notes.length<3) || g.t-lastAccent<30/Choreography.tempoSegment(track,1,g.t)[2])continue;
           lastAccent=g.t;
         }
-        add(g.t,g.pitch,g.velocity,0,1);
+        add(g.t,g.pitch,g.velocity,0,1,stroke);
       }
     }
-    planSpacing(list);
+    if(config.look==='live' && !track.notes[0]?.[3])assignAccents(list,track,parts,threshold);
+    planSpacing(list,config.look==='live');
     const count=list.length;
     const salvos=Choreography.salvos(track,config.salvos);
     function addFormation(formation,points,seed){
@@ -200,7 +254,7 @@ window.Fireworks = (() => {
     const rand=random(s.seed), arr=[], k=s.kind;
     const counts={willow:192,chrys:328,peony:245,crown:224,ring:94,tworing:156,palm:94,
       fan:95,cross:88,horsetail:120,dahlia:164,strobe:176};
-    const n=s.noteBurst?Math.min(counts[k],Math.round(54+14*s.size)):s.size<1.4?46:counts[k];
+    const n=s.compact?32:s.noteBurst?Math.min(counts[k],Math.round(54+14*s.size)):s.size<1.4?46:counts[k];
     for(let i=0;i<n;i++){
       const u=(i+.5)/n, angle=i*2.39996323+rand()*.13;
       let yy=1-2*u, rr=Math.sqrt(1-yy*yy), dx=rr*Math.cos(angle), dz=rr*Math.sin(angle), dy=yy;
@@ -244,6 +298,10 @@ window.Fireworks = (() => {
     metres,gravity,deck,banks,bankZ,flight,
     previewFor(config){
       const list=preview.map(cueStylist(config,371)).sort((a,b)=>a.t-b.t);
+      if(config.staging==='scatter'){
+        const rand=random(85023);
+        for(const s of list)[s.x,s.y,s.z]=scatterPosition(rand,63);
+      }
       planFlights(list,config);
       return list;
     }};

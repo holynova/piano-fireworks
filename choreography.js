@@ -1,13 +1,38 @@
 // Cue points are quarter-note beats in the unfolded performances in music/build.py.
 window.Choreography = (() => {
-  const names={melody:'循音散点', banks:'两岸对答', wave:'横向波浪', fan:'渐开扇面'};
+  const names={scatter:'全场随机', melody:'循音散点', banks:'两岸对答', wave:'横向波浪', fan:'渐开扇面'};
   const descriptions={
+    scatter:'音符在全场散开，音高影响绽放高度。',
     melody:'低音偏左下，高音偏右上，强音的花朵更大。',
     banks:'中央 C 以下在左岸回应，中央 C 及以上在右岸绽放。',
     wave:'爆点随乐拍横移，高音让波浪上的花朵升得更高。',
     fan:'同一音区沿相近的方向绽放，扇面在本段前六拍逐渐展开。'
   };
   const scores={
+    senbonzakura:[[0,'wave'],[32,'fan'],[64,'wave'],[96,'melody']],
+    ievan_polkka:[[0,'melody'],[16,'wave'],[32,'banks'],[48,'fan']],
+    korobeiniki:[[0,'banks'],[32,'wave'],[64,'fan'],[96,'banks']],
+    snare_march:[[0,'fan'],[16,'banks'],[32,'wave']],
+    snare_offbeat:[[0,'banks'],[16,'fan'],[32,'wave']],
+    snare_tide:[[0,'wave'],[16,'fan'],[32,'wave'],[48,'melody']],
+    traumerei:[[0,'melody'],[32,'wave'],[64,'melody']],
+    ave_maria:[[0,'wave'],[64,'melody'],[144,'banks'],[224,'fan']],
+    bumblebee:[[0,'wave'],[48,'banks'],[96,'wave'],[160,'fan']],
+    revolutionary:[[0,'banks'],[64,'wave'],[144,'fan'],[240,'banks'],[304,'fan']],
+    piano_canon:[[0,'melody'],[64,'banks'],[128,'wave'],[224,'fan'],[320,'banks']],
+    liebestraum:[[0,'melody'],[120,'wave'],[240,'fan'],[384,'banks'],[504,'melody']],
+    hungarian_five:[[0,'banks'],[48,'fan'],[96,'wave'],[160,'banks']],
+    campanella:[[0,'melody'],[48,'banks'],[96,'wave'],[168,'melody'],[240,'fan'],[330,'banks'],[369,'wave'],[417,'fan']],
+    jasmine:[[0,'melody'],[32,'wave'],[72,'banks'],[104,'fan']],
+    flower_drum:[[0,'banks'],[32,'fan'],[66,'wave'],[98,'banks']],
+    kangding:[[0,'melody'],[12,'wave'],[28,'banks'],[40,'fan']],
+    purple_bamboo:[[0,'wave'],[24,'melody'],[54,'fan'],[80,'wave']],
+    boatmen:[[0,'melody'],[16,'wave'],[30,'banks'],[46,'fan']],
+    pouch:[[0,'melody'],[22,'wave'],[46,'melody'],[68,'fan']],
+    tea_lantern:[[0,'banks'],[32,'wave'],[66,'fan'],[98,'banks']],
+    wuxi:[[0,'wave'],[16,'banks'],[34,'melody'],[50,'fan']],
+    mengjiang:[[0,'melody'],[16,'wave'],[34,'banks'],[50,'melody']],
+    defend_river:[[0,'melody'],[16,'banks'],[44,'wave'],[66,'banks'],[110,'fan']],
     debussy_arabesque:[[0,'wave'],[64,'banks'],[144,'melody'],[256,'fan'],[336,'wave']],
     raindrop:[[0,'melody'],[64,'banks'],[112,'wave'],[224,'fan'],[304,'melody']],
     mountain_king:[[0,'banks'],[64,'wave'],[128,'banks'],[224,'fan'],[288,'wave']],
@@ -47,6 +72,30 @@ window.Choreography = (() => {
   };
   // The third field marks extra phrase accents for the denser arrangement.
   const salvoScores={
+    senbonzakura:[[32,'trio',true],[64,'arch'],[96,'fan',true]],
+    ievan_polkka:[[16,'trio',true],[32,'fan']],
+    korobeiniki:[[32,'arch',true],[64,'trio'],[96,'fan',true]],
+    snare_march:[[16,'trio'],[32,'fan',true]],
+    snare_offbeat:[[16.75,'arch',true],[32,'trio']],
+    snare_tide:[[28,'fan'],[44,'arch',true]],
+    traumerei:[[32,'trio',true],[64,'arch']],
+    ave_maria:[[64,'trio',true],[224,'arch']],
+    bumblebee:[[48,'trio',true],[160,'fan']],
+    revolutionary:[[144,'arch'],[304,'fan']],
+    piano_canon:[[128,'trio',true],[224,'arch']],
+    liebestraum:[[240,'arch'],[384,'fan',true]],
+    hungarian_five:[[48,'fan'],[160,'trio',true]],
+    campanella:[[96,'trio',true],[240,'arch'],[369,'fan']],
+    jasmine:[[32,'trio',true],[72,'arch']],
+    flower_drum:[[32,'trio',true],[66,'fan']],
+    kangding:[[12,'trio',true],[28,'trio']],
+    purple_bamboo:[[24,'trio',true],[54,'arch']],
+    boatmen:[[16,'trio',true],[30,'trio']],
+    pouch:[[22,'trio',true],[46,'arch']],
+    tea_lantern:[[32,'trio',true],[66,'fan']],
+    wuxi:[[16,'trio',true],[34,'arch']],
+    mengjiang:[[16,'trio',true],[34,'trio']],
+    defend_river:[[16,'trio',true],[66,'fan']],
     debussy_arabesque:[[64,'trio',true],[256,'arch']],
     raindrop:[[64,'arch',true],[224,'fan']],
     mountain_king:[[64,'fan',true],[224,'trio']],
@@ -133,7 +182,37 @@ window.Choreography = (() => {
   function sections(track,mode){
     if(mode==='fixed')return [{start:0,form:'melody'}];
     const result=phraseAttacks(track,scores[track.id]||[[0,'melody']]);
-    return result.length?result:[{start:0,form:'melody'}];
+    const parts=result.length?result:[{start:0,form:'melody'}];
+    return mode==='scatter'?parts.map(({start})=>({start,form:'scatter'})):parts;
+  }
+  // Prefer a scored change of phrase. Within long passages use eight-beat
+  // subdivisions, snapped to the next actual attack through the tempo map.
+  function cameraCuts(track,hold){
+    const phrases=sections(track,'score'),candidates=[];
+    let phrase=0,origin=beatAt(track,phrases[0].start),nextBeat=origin+8;
+    for(const [t] of track.notes){
+      const beat=beatAt(track,t);
+      if(phrase+1<phrases.length && t>=phrases[phrase+1].start){
+        phrase++;origin=beat;nextBeat=origin+8;
+        candidates.push({start:t,phrase:true});
+      }else if(beat+.0001>=nextBeat){
+        while(beat+.0001>=nextBeat)nextBeat+=8;
+        candidates.push({start:t,phrase:false});
+      }
+    }
+    const cuts=[{start:0}];let i=0;
+    while(i<candidates.length){
+      const last=cuts.at(-1).start;
+      while(i<candidates.length&&candidates[i].start<last+hold*.65)i++;
+      if(i===candidates.length)break;
+      let best=i;
+      for(let j=i+1;j<candidates.length&&candidates[j].start<=last+hold*1.5;j++){
+        const a=candidates[j],b=candidates[best];
+        if(a.phrase!==b.phrase?a.phrase:Math.abs(a.start-last-hold)<Math.abs(b.start-last-hold))best=j;
+      }
+      cuts.push(candidates[best]);i=best+1;
+    }
+    return cuts;
   }
   function sectionAt(sections,t){
     let index=0;
@@ -187,5 +266,5 @@ window.Choreography = (() => {
     }
     return points;
   }
-  return {beatAt,tempoSegment,names,descriptions,endings,salvoNames,salvoPoints,salvos,sections,sectionAt,position,endingFor,endingPoints};
+  return {beatAt,tempoSegment,cameraCuts,names,descriptions,endings,salvoNames,salvoPoints,salvos,sections,sectionAt,position,endingFor,endingPoints};
 })();

@@ -26,11 +26,11 @@ function setupTuning(app) {
   let slot=stored?.slot==='B'?'B':'A';
   function loadSlot(id,base){
     const old=stored?.[id];
-    return Fireworks.normalize({...base,...old,view:old?.view??(old?'mid':base.view),ending:old?.ending??(old?'ring':base.ending)});
+    return Fireworks.normalize({...base,...old,look:old?.look??(old?'classic':base.look),view:old?.view??(old?'mid':base.view),ending:old?.ending??(old?'ring':base.ending)});
   }
   const slots={
     A:loadSlot('A',initial),
-    B:loadSlot('B',{...initial,trigger:'chord',shapes:['peony']})
+    B:loadSlot('B',{...initial,look:'classic'})
   };
   const saveStatus=document.createElement('small');
   saveStatus.setAttribute('role','status');
@@ -82,7 +82,7 @@ function setupTuning(app) {
     }
     $('shotTimeValue').textContent=cfg.shotTime+' 秒';
     $('windSpeedValue').textContent=cfg.windSpeed===0?'无风':cfg.windSpeed+' m/s';
-    for(const key of ['trigger','staging','salvos','ending','palette','brightness','overlap','height','attack','decay','offset','camera','view','backdrop','shotTime','windSpeed','windDirection'])$(key).value=cfg[key];
+    for(const key of ['look','trigger','staging','salvos','ending','palette','brightness','overlap','height','attack','decay','offset','camera','view','backdrop','shotTime','windSpeed','windDirection'])$(key).value=cfg[key];
     for(const key of ['launch','finale'])$(key).checked=cfg[key];
     for(const id of ['A','B'])$('slot'+id).setAttribute('aria-pressed',slot===id);
     for(const [b,kind] of shapeButtons){
@@ -92,6 +92,7 @@ function setupTuning(app) {
     $('shapeSummary').textContent=cfg.shapes.length>2?cfg.shapes.length+' 种':cfg.shapes.map(s=>Fireworks.kinds[s]).join(' · ');
     $('brightnessValue').textContent=cfg.brightness+'%';
     $('overlapValue').textContent=cfg.overlap+'%';
+    $('overlapHint').textContent=cfg.look==='live'?'调高后，密集爆点错开，新开的花更小。':'调高后，密集爆点更分散，余辉更短。';
     $('heightValue').textContent=cfg.height+'%';
     $('attackValue').textContent=cfg.attack+'%';
     $('decayValue').textContent=cfg.decay+' 秒';
@@ -105,12 +106,12 @@ function setupTuning(app) {
   function update(key,value){
     commit({[key]:value});
   }
-  for(const key of ['trigger','staging','salvos','ending','palette','camera','view','backdrop'])$(key).onchange=e=>update(key,e.target.value);
+  for(const key of ['look','trigger','staging','salvos','ending','palette','camera','view','backdrop'])$(key).onchange=e=>update(key,e.target.value);
   $('windDirection').onchange=e=>update('windDirection',Number(e.target.value));
   for(const key of ['brightness','overlap','height','attack','decay','offset','shotTime','windSpeed'])$(key).oninput=e=>update(key,Number(e.target.value));
   for(const key of ['launch','finale'])$(key).onchange=e=>update(key,e.target.checked);
   for(const id of ['A','B'])$('slot'+id).onclick=()=>{slot=id;commit()};
-  $('resetMix').onclick=()=>commit(initial);
+  $('resetMix').onclick=()=>commit(slot==='B'?{...initial,look:'classic'}:initial);
   display();
   return slots[slot];
 }

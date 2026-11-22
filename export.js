@@ -57,7 +57,7 @@ window.exportConcert=async function(track,config,signal,onProgress){
         meta=undefined;packet=await packets.next();
       }
       if(time<titleSeconds)stage.ctx.drawImage(titleCard,0,0);
-      else if(time<musicEnd)stage.render(time-musicStart);
+      else if(time<musicEnd)stage.render(time+.5/fps-musicStart);
       else stage.ctx.drawImage(closingCard,0,0);
       await video.add(time,Math.min(1/fps,duration-time));
       if(i%8===0){

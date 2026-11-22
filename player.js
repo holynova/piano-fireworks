@@ -108,11 +108,36 @@
   document.addEventListener('focusin',e=>{
     if(!queuePanel.contains(e.target) && e.target!==queueToggle)closeQueue();
   });
+  const recordings=$('artistRecordings'),recordingPlayer=$('recordingPlayer');
+  function closeRecording(){
+    recordingPlayer.replaceChildren();
+    recordings.querySelector('[aria-current]')?.removeAttribute('aria-current');
+  }
+  for(const link of recordings.querySelectorAll('a')){
+    link.onclick=e=>{
+      if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+      e.preventDefault();
+      ++revision;audio.pause();closeRecording();
+      const url=new URL(link.href);url.hostname='embed.music.apple.com';
+      const embed=document.createElement('iframe');
+      embed.src=url.href;embed.title=link.textContent+' · Apple Music 试听';
+      embed.allow='autoplay; encrypted-media';embed.height='175';
+      const external=document.createElement('a');
+      external.href=link.href;external.target='_blank';external.rel='noopener';
+      external.textContent='在 Apple Music 打开 ↗';
+      recordingPlayer.append(embed,external);link.setAttribute('aria-current','true');
+    };
+  }
+  recordings.addEventListener('toggle',()=>{if(!recordings.open)closeRecording()});
+  function trackCredit(track){
+    return track.instrument && track.instrument!=='钢琴'
+      ? track.composer+' · '+track.instrument : track.composer;
+  }
   const buttons=tracks.map((track,i)=>{
     const button=document.createElement('button');button.className='track';button.type='button';
     const art=document.createElement('canvas');art.setAttribute('aria-hidden','true');cover(art,i);
     const text=document.createElement('span'),label=document.createElement('strong'),author=document.createElement('small');
-    label.textContent=track.title;author.textContent=(track.instrument || '钢琴')+' · '+track.composer;text.append(label,author);
+    label.textContent=track.title;author.textContent=trackCredit(track);text.append(label,author);
     const len=document.createElement('span');len.className='len';len.textContent=time(track.duration);
     button.append(art,text,len);button.onclick=()=>playFromList(i);
     $('tracks').append(button);
@@ -127,7 +152,12 @@
     const tr=tracks[index];remember('track',tr.id);stage.select(tr,config);
     loopRange=null;updateLoopLabel();showCoverage();
     poster=true;audio.src=tr.src;audio.load();$('error').textContent='';
-    $('song').textContent=tr.title;$('artist').textContent=tr.composer+' · '+(tr.instrument || '钢琴');
+    $('song').textContent=tr.title;$('artist').textContent=trackCredit(tr);
+    const drums=Boolean(tr.notes[0]?.[3]);
+    $('keys').hidden=drums;
+    const label=drums?'实时鼓点':'实时音高';
+    $('performanceLabel').textContent=label;
+    $('keys').closest('section').setAttribute('aria-label',label);
     $('tempo').textContent=tr.tempo+' BPM';$('duration').textContent=time(tr.duration);
     $('seek').max=tr.duration;
     buttons.forEach((b,n)=>b.setAttribute('aria-pressed',String(n===index)));
@@ -137,6 +167,7 @@
     if(drawer.open && !$('sharePanel').hidden)updateShare();
   }
   async function play(){
+    closeRecording();
     const token=++revision;
     const fresh=poster||audio.ended;
     if(audio.ended)audio.currentTime=0;
@@ -151,7 +182,9 @@
   function refresh(){
     const active=!audio.paused&&!audio.ended;
     document.body.classList.toggle('playing',active);
-    $('showState').textContent=active?(opening?'升空 · '+Math.ceil(Math.max(0,-scoreTime()))+' 秒':'演出中'):audio.ended?'演出结束':poster?'待演':'已暂停';
+    const status=opening?'升空 · '+Math.ceil(Math.max(0,-scoreTime()))+' 秒':audio.ended?'演出结束':'';
+    $('showState').textContent=status;
+    $('showState').closest('.viewbar').hidden=!status;
     buttonIcon($('play'),active?'pause':'play',active?'暂停':audio.ended?'重播':'播放');
     buttonIcon($('mute'),muted?'muted':'sound',muted?'恢复声音':'静音');
     const value=Math.max(0,scoreTime());
@@ -165,6 +198,12 @@
     const notes=tracks[index].notes,active=new Set();
     let low=0,high=notes.length;
     while(low<high){const mid=(low+high)>>1;if(notes[mid][0]<t-.16)low=mid+1;else high=mid}
+    if($('keys').hidden){
+      let stroke;
+      for(let j=low;!poster && j<notes.length && notes[j][0]<=t;j++)stroke=notes[j][3];
+      $('noteName').textContent=({accent:'重音',tap:'单击',ghost:'轻击',roll:'滚奏'})[stroke]||'—';
+      return;
+    }
     if(!poster)for(let j=low;j<notes.length && notes[j][0]<=t;j++)active.add(notes[j][1]);
     const signature=[...active].join(',');
     if(signature===drawnKeys && keyState)return;
@@ -178,10 +217,33 @@
     for(const [n,j] of black){g.fillStyle=active.has(n)?'#d3a267':'#222b3a';g.fillRect((j-.32)*step,0,step*.64,height*.61)}
     const n=Math.max(...active);$('noteName').textContent=Number.isFinite(n)?['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'][n%12]+(Math.floor(n/12)-1):'—';
   }
+  let frameInterval=1000/60,lastFrame=null,drawCost=0,clockRunning=false;
+  function resetFrameClock(){lastFrame=null;drawCost=0;frameInterval=1000/60}
+  audio.addEventListener('playing',()=>{clockRunning=true;resetFrameClock();request()});
+  for(const event of ['waiting','pause','ended','emptied']){
+    audio.addEventListener(event,()=>{clockRunning=false;resetFrameClock()});
+  }
+  audio.addEventListener('seeking',resetFrameClock);
+  document.addEventListener('visibilitychange',resetFrameClock);
   function draw(now){
     frame=0;if(document.hidden)return;
     advanceOpening();enforceLoop();
-    const t=scoreTime();stage.render(t,poster);keyboard(t);
+    const running=clockRunning&&!audio.paused&&!audio.ended&&!audio.seeking&&audio.readyState>=3;
+    const start=performance.now();
+    if(running&&lastFrame!==null){
+      const interval=now-lastFrame;
+      if(interval>=4&&interval<=50)frameInterval+=(interval-frameInterval)*.25;
+    }
+    lastFrame=running?now:null;
+    // Sample the middle of the frame's display interval. The media clock keeps
+    // advancing while Canvas draws; keep the estimate bounded on slow devices.
+    const lead=running?Math.min(32,frameInterval*.5+Math.min(drawCost,frameInterval)):0;
+    let t=scoreTime()+lead*.001*audio.playbackRate;
+    if(opening)t=Math.min(0,t);
+    else if(loopRange&&running)t=Math.min(t,loopRange.end);
+    stage.render(t,poster);
+    if($('mobilePanel').open&&!document.querySelector('.keysPane').hidden)keyboard(t);
+    if(running)drawCost+=(Math.min(32,performance.now()-start)-drawCost)*.25;
     if(now-lastUI>80||lastUI<0){refresh();lastUI=now}
     if(!audio.paused&&!audio.ended)request();
   }
@@ -238,8 +300,9 @@
     $('salvoCues').replaceChildren(...buttons);
   }
   function showCoverage(){
-    const notes=tracks[index].notes.length;
-    $('coverage').textContent=notes.toLocaleString()+' 音符 · '+stage.script.count.toLocaleString()+' 次触发';
+    const notes=tracks[index].notes;
+    const unit=notes[0]?.[3]?' 鼓击':' 音符';
+    $('coverage').textContent=notes.length.toLocaleString()+unit+' · '+stage.script.count.toLocaleString()+' 次触发';
     const place=Landscapes.resolve('score',tracks[index]);
     $('backdrop').options[0].textContent='随曲目 · '+Landscapes.scenes[place].name;
     const environment=Landscapes.scenes[Landscapes.resolve(config.backdrop,tracks[index])];
@@ -254,7 +317,7 @@
     updateSection(Math.max(0,scoreTime()));
   }
   let config=setupTuning({configure(next){
-    const rebuild=config.salvos!==next.salvos || config.height!==next.height || config.overlap!==next.overlap || config.trigger!==next.trigger || config.palette!==next.palette ||
+    const rebuild=config.look!==next.look || config.shotTime!==next.shotTime || config.salvos!==next.salvos || config.height!==next.height || config.overlap!==next.overlap || config.trigger!==next.trigger || config.palette!==next.palette ||
       config.staging!==next.staging || config.ending!==next.ending || config.finale!==next.finale || config.shapes.join()!==next.shapes.join();
     config=next;
     if(opening && !next.launch)leaveOpening(0);
@@ -315,12 +378,13 @@
       if(opener)opener.setAttribute('aria-expanded','false');
       opener=$(id);opener.setAttribute('aria-expanded','true');
       const tracksVisible=section==='program';
+      if(!tracksVisible)closeRecording();
       $('program').hidden=!tracksVisible;
       $('tuning').hidden=section!=='tuning';
       const sharing=section==='sharePanel';
       $('sharePanel').hidden=!sharing;
-      document.querySelector('.keysPane').hidden=sharing;
-      $('creditsButton').hidden=sharing;
+      document.querySelector('.keysPane').hidden=section!=='tuning';
+      $('creditsButton').hidden=!tracksVisible;
       $('count').hidden=!tracksVisible;
       $('panelTitle').textContent=opener.textContent.trim();
       if(!drawer.open)drawer.show();
@@ -332,6 +396,7 @@
     };
   }
   $('closePanel').onclick=()=>drawer.close();
+  drawer.addEventListener('close',()=>{if(!drawer.open)closeRecording()});
   drawer.addEventListener('close',()=>{if(!drawer.open && opener){opener.setAttribute('aria-expanded','false');opener.focus({preventScroll:true});opener=null}});
   if(window.TuningPreview?.trial && matchMedia('(min-width:701px)').matches){
     opener=$('railTuning');

@@ -27,6 +27,7 @@ class FireworkStage {
     this.galaxy=Landscapes.galaxy();
     this.ripples=Array.from({length:260},()=>[(rand()-.5)*135,-49+rand()*65,.12+rand()*.58,rand()*6]);
     this.glows=new Map();
+    this.smokeSprites=new Map();
     this.reflection=document.createElement('canvas');
     this.reflectionCtx=this.reflection.getContext('2d',{alpha:false});
     this.resize(frameSize);
@@ -89,10 +90,53 @@ class FireworkStage {
   select(track,config=this.config) {
     this.track=track;this.config=config;this.motion=config.camera;
     this.script=Fireworks.build(track,config);
+    this.cuts=config.look==='live'?Choreography.cameraCuts(track,config.shotTime):[];
     this.preview=Fireworks.previewFor(config);
     this.cache=new WeakMap();
   }
+  closeupPose(t,poster){
+    const scale=this.config.height/100;
+    let tx=0,ty=11*scale,tz=Fireworks.bankZ;
+    // Visible span along the shorter edge. Fixed holds a single tight composition.
+    let span=13*scale;
+    const cues=poster?this.preview:this.script.list;
+    if(cues.length && this.motion!=='fixed'){
+      // Blend nearby blooms on the score clock so a chord shares one frame and
+      // scrubbing or exporting can recover the same framing without camera history.
+      const clock=Math.max(cues[0].t,Math.min(t,cues.at(-1).t));
+      let lo=0,hi=cues.length;
+      while(lo<hi){const mid=(lo+hi)>>1;if(cues[mid].t<clock-2)lo=mid+1;else hi=mid}
+      // A small weight at the resting composition lets long silences ease back out.
+      let weight=.02,sumX=0,sumY=ty*weight,sumZ=tz*weight;
+      let sumXX=0,sumYY=ty*sumY,sumRadius=span/1.8*weight;
+      for(let i=lo;i<cues.length && cues[i].t<=clock+1.15;i++){
+        const s=cues[i],age=clock-s.t;
+        const u=age<.45?(.45-age)/1.60:(age-.45)/1.55;
+        const w=Math.max(0,1-u*u)**3*s.size*(s.compact?.4:1);
+        const drift=this.liftDrift(s.lead);
+        const cx=s.cx+drift*this.windX,cz=s.z+drift*this.windZ;
+        weight+=w;sumX+=w*cx;sumY+=w*s.cy;sumZ+=w*cz;
+        sumXX+=w*cx*cx;sumYY+=w*s.cy*s.cy;sumRadius+=w*s.size;
+      }
+      tx=sumX/weight;ty=sumY/weight;tz=sumZ/weight;
+      const short=Math.min(this.w,this.h),r=sumRadius/weight;
+      const spreadX=Math.sqrt(Math.max(0,sumXX/weight-tx*tx));
+      const spreadY=Math.sqrt(Math.max(0,sumYY/weight-ty*ty));
+      span=Math.max(3.5*scale,1.8*r,
+        (1.8*r+2.3*spreadX)*short/this.w,(1.8*r+2.3*spreadY)*short/this.h);
+      if(!poster && this.config.launch && t<cues[0].t){
+        const first=cues[0],elapsed=t-first.t;
+        const [x,y,z]=Fireworks.flight(first,elapsed);
+        const remaining=Math.min(1,-elapsed/first.lead);
+        tx+=(x-tx)*remaining;ty=y+(ty-first.cy)*(1-remaining);tz+=(z-tz)*remaining;
+      }
+    }
+    const ex=0,ey=.65,ez=Fireworks.bankZ+27;
+    const distance=Math.hypot(tx-ex,ty-ey,tz-ez);
+    return {ex,ey,ez,tx,ty,tz,f:Math.min(this.w,this.h)*distance/span};
+  }
   cameraPose(viewId,t,poster){
+    if(viewId==='closeup')return this.closeupPose(t,poster);
     const moving=!poster && this.motion!=='fixed',fly=this.motion==='fly';
     const phase=moving?t*2*Math.PI/(fly?58:88):0;
     const sway=Math.sin(phase),sweep=(1-Math.cos(phase))*.5;
@@ -113,6 +157,11 @@ class FireworkStage {
       eye=view.eye;
       aim=view.target+(ground?6:2)*sway;
       tx=(ground?.26:.11)*sway;lens=view.lens;
+      if(this.config.look==='live'){
+        angle=view.angle;distance=view.distance;
+        tx=(moving?.16:0)*sway;
+        aim=view.target+(moving?1.8:0)*sway;
+      }
       if(ground && moving && this.config.launch && t<0){
         const progress=Math.max(0,Math.min(1,1-t/this.script.firstLaunch));
         aim*=.14+.86*progress*(2-progress);
@@ -121,13 +170,16 @@ class FireworkStage {
     const ex=Math.sin(angle)*distance/scale,ey=eye/scale,ez=tz+Math.cos(angle)*distance/scale;
     const ty=aim*this.config.height/(100*scale);
     const peak=this.script.peak;
-    const wide=!moving||peak==null?0:Math.max(0,1-Math.abs(t-peak-.5)/8);
+    const wide=!moving||peak==null||(this.config.look==='live'&&viewId!=='drone')?0:Math.max(0,1-Math.abs(t-peak-.5)/8);
     return {ex,ey,ez,tx,ty,tz,f:Math.min(this.h*lens*(1-.08*wide),this.w*(viewId==='drone'?.76:.98))};
   }
   camera(t,poster){
     const cfg=this.config;
     let view=cfg.view,blend=0,next;
-    if(view==='auto'){
+    if(view==='auto' && cfg.look==='live'){
+      const shot=poster?0:Choreography.sectionAt(this.cuts,t);
+      view=cfg.tourViews[shot%cfg.tourViews.length];
+    }else if(view==='auto'){
       const clock=poster?0:Math.max(0,t),shot=Math.floor(clock/cfg.shotTime);
       view=cfg.tourViews[shot%cfg.tourViews.length];
       next=cfg.tourViews[(shot+1)%cfg.tourViews.length];
@@ -317,6 +369,45 @@ class FireworkStage {
       g.fillStyle='#aa8261';g.fillRect(top[0][0],top[0][1]-.7,1.3,.8);
     }
   }
+  illuminateGround(lights,t,shore,look){
+    if(!lights.length||shore>=this.h)return;
+    const g=this.ctx,gain=this.config.brightness/100;
+    // Surface highlights take the strongest local flash; a salvo cannot add a
+    // full-screen white layer. Project highlights onto the actual ground plane.
+    const incident=(x,z)=>{
+      let amount=0,color;
+      for(const light of lights){
+        const d2=(light.x-x)**2+(light.z-z)**2+light.y**2;
+        const value=light.power/(1+d2/90);
+        if(value>amount){amount=value;color=light.color}
+      }
+      return {amount,color};
+    };
+    g.save();
+    if(look.water){
+      for(const x of Fireworks.banks){
+        const z=Fireworks.bankZ,light=incident(x,z);
+        const a=this.project(x-.63,Fireworks.deck,z+.21),b=this.project(x+.63,Fireworks.deck,z+.21);
+        if(!a||!b||light.amount<.018)continue;
+        g.strokeStyle=light.color;g.lineWidth=1;g.globalAlpha=Math.min(.52,light.amount)*gain;
+        g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();
+      }
+    }
+    // The same ground samples give broken specular glints on water and short,
+    // diffuse highlights along the grass. Dark gaps remain between them.
+    for(const [x,z,length,phase] of this.ripples){
+      const p=this.project(x,.025,z);
+      if(!p||p[1]<shore||p[1]>this.h||p[0]<0||p[0]>this.w)continue;
+      const light=incident(x,z);
+      if(light.amount<.03)continue;
+      const wave=look.water?.35+.65*Math.sin(phase+t*1.8)**2:.55;
+      const half=Math.max(.5,p[2]*length*(look.water?.9:.24));
+      g.globalAlpha=gain*Math.min(.39,light.amount)*wave;g.strokeStyle=light.color;
+      g.lineWidth=look.water?1.1:.8;g.beginPath();
+      g.moveTo(p[0]-half,p[1]);g.lineTo(p[0]+half,p[1]-(look.water?0:half*.52));g.stroke();
+    }
+    g.restore();
+  }
   reflectFire(t,shore,waves){
     // Reflect the vertical plane through the display, using camera pitch and eye height.
     // Particles a little in front of or behind this plane share its water ripple.
@@ -341,6 +432,70 @@ class FireworkStage {
       y+=step;
     }
     g.globalAlpha=1;
+  }
+  smokeSprite(color,variant){
+    const key=color+variant;
+    if(this.smokeSprites.has(key))return this.smokeSprites.get(key);
+    const sprite=document.createElement('canvas');
+    sprite.width=sprite.height=96;
+    const brush=sprite.getContext('2d'),rand=Fireworks.random(3161+variant*317);
+    for(let i=0;i<24;i++){
+      const angle=rand()*Math.PI*2,r=Math.sqrt(rand())*29;
+      const x=48+r*Math.cos(angle),y=48+r*Math.sin(angle)*.76,radius=6+rand()*12;
+      const puff=brush.createRadialGradient(x,y,0,x,y,radius);
+      puff.addColorStop(0,color+'85');puff.addColorStop(.55,color+'48');puff.addColorStop(1,color+'00');
+      brush.fillStyle=puff;brush.fillRect(x-radius,y-radius,radius*2,radius*2);
+    }
+    this.smokeSprites.set(key,sprite);return sprite;
+  }
+  // Reconstruct smoke in world space from the score, including after seeking.
+  drawSmoke(item,lights){
+    const {s,x,y,z,age}=item,p=this.project(x,y,z);
+    if(!p)return;
+    const radius=p[2]*(s.size*.64+.36+age*.32);
+    if(p[0]+radius*2<0||p[0]-radius*2>this.w||p[1]+radius<0||p[1]-radius>this.h)return;
+    let strongest=0,litColor;
+    for(const light of lights){
+      const d2=(light.x-x)**2+(light.y-y)**2+(light.z-z)**2;
+      const intensity=light.power/(1+d2/15);
+      if(intensity>strongest){strongest=intensity;litColor=light.color}
+    }
+    const opacity=Math.min(1,age*3)*(1-age/9)**1.45;
+    const g=this.fireCtx,variant=s.seed%7;
+    g.save();g.translate(p[0],p[1]);g.rotate(.28*Math.sin(variant+age*.09));
+    g.globalAlpha=.44*opacity;
+    g.drawImage(this.smokeSprite('#414451',variant),-radius,-radius*.82,radius*2,radius*1.64);
+    if(strongest>.025){
+      g.globalAlpha=Math.min(.63,strongest*.48)*opacity;
+      g.drawImage(this.smokeSprite(litColor,variant),-radius,-radius*.82,radius*2,radius*1.64);
+    }
+    g.restore();
+  }
+  renderLive(list,first,t,ahead,poster){
+    const items=[],lights=[],c=this.cam;
+    const depth=(x,y,z)=>(x-c.ex)*c.fx+(y-c.ey)*c.fy+(z-c.ez)*c.fz;
+    let latest=null;
+    for(let i=first;i<list.length&&list[i].t<=t+ahead;i++){
+      const s=list[i],age=t-s.t;
+      if(age>=0)latest=s;
+      const shift=this.liftDrift(s.lead),x=s.cx+shift*this.windX,z=s.z+shift*this.windZ;
+      if(age>=0 && !s.compact){
+        if(age<.9)lights.push({x,y:s.cy,z,power:Math.min(1.5,s.size*.48)*Math.exp(-age*4),
+          color:Fireworks.palettes[s.color][0]});
+        if(age<9 && (!s.formation||s.seed%3===0)){
+          const drift=age*(.65+.03*(s.seed%7)),sx=x+drift*this.windX,sz=z+drift*this.windZ;
+          const sy=s.cy+.16*age;
+          items.push({smoke:true,s,x:sx,y:sy,z:sz,age,depth:depth(sx,sy,sz)-.18});
+        }
+      }
+      if(age>=-s.lead && age<=5.5)items.push({s,depth:depth(x,s.cy,z)});
+    }
+    items.sort((a,b)=>b.depth-a.depth);
+    for(const item of items){
+      if(item.smoke)this.drawSmoke(item,lights);
+      else this.shell(item.s,t,poster);
+    }
+    return {latest,lights};
   }
   liftDrift(seconds){
     return .28*(seconds+Math.expm1(-.54*seconds)/.54);
@@ -367,12 +522,15 @@ class FireworkStage {
     const crowd=(s.crowd||0)*separation;
     const cy=s.cy;
     if(elapsed<0){if(this.config.launch && s.tracer && elapsed>=-s.lead)this.comet(s,elapsed);return}
-    const duration=this.config.decay*(1-.60*crowd);
-    const age=elapsed;
-    if(s.noteBurst && elapsed>duration)return;
-    if(age>3.15)return;
-    const fade=s.noteBurst?Math.min(1,(duration-age)/Math.min(.35,duration*.35)):1;
-    const size=s.size*(1-.36*crowd);
+    const live=this.config.look==='live',age=elapsed;
+    const shortStroke=s.stroke==='roll' || s.stroke==='ghost';
+    const duration=this.config.decay*(1-.60*crowd)*(shortStroke?.32:1);
+    // In the live look density reduces the incoming bloom's area. Each star
+    // already in the air runs out on its own clock, independent of later notes.
+    const burningTime=live?age/((shortStroke?.24:s.compact?.50:1)*Math.sqrt(this.config.decay/1.25)):age;
+    if(burningTime>3.15||(!live&&s.noteBurst&&age>duration))return;
+    const fade=!live&&s.noteBurst?Math.min(1,(duration-age)/Math.min(.35,duration*.35)):1;
+    const size=s.size*(1-(live?.52:.36)*crowd);
     const shift=this.liftDrift(s.lead),cx=s.cx+shift*this.windX,cz=s.z+shift*this.windZ;
     const p=this.project(cx,cy,cz);
     if(!p)return;
@@ -412,17 +570,23 @@ class FireworkStage {
     };
     const twinkle=s.kind==='crown'||s.kind==='willow';
     for(const v of ps){
-      if(age>=v.life)continue;
+      if(burningTime>=v.life)continue;
       const a=point(v,head),b=point(v,trail);
       if(!a||!b)continue;
-      let light=Math.min(1,(v.life-age)*2.9)*v.lum;
-      if(flash)light*=.24+.76*(.5+.5*Math.cos(age*22+v.phase))**2;
+      let light=Math.min(1,(v.life-burningTime)*2.9)*v.lum;
+      if(live)light*=1-.70*(burningTime/v.life)**1.4;
+      if(flash){
+        const pulse=.5+.5*Math.cos(age*(live?17+v.phase:22)+v.phase);
+        if(live&&pulse<.38)continue;
+        light*=.24+.76*pulse**2;
+      }
       if(twinkle)light*=.57+.43*Math.sin(v.phase+age*11)**2;
       if(light>.56 && v.phase>2.8){
         tips.moveTo(a[0],a[1]);tips.lineTo(a[0]+.17,a[1]+.16);
         if(v.phase>5.55){anchors.moveTo(a[0],a[1]);anchors.lineTo(a[0]+.1,a[1]+.1)}
       }
-      const path=bins[v.tint*4+Math.min(3,Math.floor(light*4))];
+      const tint=live&&twinkle&&burningTime>v.life*.66?2:v.tint;
+      const path=bins[tint*4+Math.min(3,Math.floor(light*4))];
       path.moveTo(b[0],b[1]);path.lineTo(a[0]+.12,a[1]+.12);
       if(longTrail && age>.09){
         const c=point(v,longTrail);
@@ -458,12 +622,16 @@ class FireworkStage {
     let latest=null;
     const list=poster?this.preview:this.script.list;
     // Binary-search for visible trajectories, including the leads of upcoming comets.
+    const live=this.config.look==='live',history=live?9:3.16;
     let lo=0,hi=list.length;
-    while(lo<hi){const m=(lo+hi)>>1;if(list[m].t<t-3.16)lo=m+1;else hi=m}
+    while(lo<hi){const m=(lo+hi)>>1;if(list[m].t<t-history)lo=m+1;else hi=m}
     const ahead=poster?Infinity:this.config.launch?this.script.maxLead:0;
-    for(let i=lo;i<list.length&&list[i].t<=t+ahead;i++){
+    let lights;
+    if(live)({latest,lights}=this.renderLive(list,lo,t,ahead,poster));
+    else for(let i=lo;i<list.length&&list[i].t<=t+ahead;i++){
       this.shell(list[i],t,poster);if(list[i].t<=t)latest=list[i];
     }
+    if(lights)this.illuminateGround(lights,t,shore,look);
     g.globalAlpha=this.config.brightness/100;
     g.drawImage(this.fireLayer,0,0,this.w,this.h);
     g.globalAlpha=1;
